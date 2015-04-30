@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "private": true,
+  "name": "dc2.frontend",
+  "description": "DC² Administration Frontend",
+  "repository": "https://gitlab.sourcecode.de/dc2-ng/dc2.frontend",
+  "license": "GPLv2",
+  "devDependencies": {
+    "bower": "*",
+    "grunt": "*",
+    "grunt-cli": "*",
+    "grunt-bower-install": "*",
+    "grunt-contrib-concat": "*"
+  },
+  "scripts": {
+  }
+}
