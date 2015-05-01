@@ -17,7 +17,7 @@ function dc2ResourceInterceptor($rootScope, $q) {
     },
     responseError: function(rejection) {
       console.log('in responseError')
-      console.log(config);
+      console.log(rejection);
       return $q.reject(rejection)
     }
   }

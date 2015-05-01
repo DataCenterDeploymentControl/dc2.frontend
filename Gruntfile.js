@@ -1,12 +1,13 @@
 module.exports = function(grunt) {
-  grunt.loadNpmTasks('grunt-bower-install');
+  grunt.loadNpmTasks('grunt-wiredep');
+  grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-concat');
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
 
-    bowerInstall: {
-      target: {
+    wiredep: {
+      prep: {
         src: [
           'app/index.html'
         ],
@@ -14,18 +15,20 @@ module.exports = function(grunt) {
       }
     },
     concat: {
-      dist: {
+      build: {
         src: [
-          'src/app.js',
-          'src/controllers/module.js',
-          'src/factories/module.js',
-          'src/factories/**/*.js',
-          'src/controllers/**/*.js'
+          'src/js/app.js',
+          'src/js/controllers/module.js',
+          'src/js/factories/module.js',
+          'src/js/directives/module.js',
+          'src/js/factories/**/*.js',
+          'src/js/controllers/**/*.js',
+          'src/js/directives/**/*.js'
         ],
         dest: 'app/js/app.js'
       }
     }
   })
-  grunt.registerTask('prep', ['bowerInstall']);
-  grunt.registerTask('build', ['concat']);
+  grunt.registerTask('prep', ['wiredep:prep']);
+  grunt.registerTask('build', ['concat:build']);
 }

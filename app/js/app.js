@@ -4,14 +4,20 @@ var DC2Frontend = angular.module('DC2Frontend', [
   'ngRoute',
   'ngResource',
   'ui.bootstrap',
+  'toaster',
   'dc2DashboardControllers',
-  'dc2Factories'
+  'dc2Factories',
+  'dc2Directives'
 ]);
 
 DC2Frontend.config(['$routeProvider',
   function($routeProvider) {
     $routeProvider.
       when('/login', {
+        templateUrl: 'partials/login/login.html',
+        controller: 'LoginCtrl'
+      }).
+      when('/logout', {
         templateUrl: 'partials/login/login.html',
         controller: 'LoginCtrl'
       }).
@@ -39,7 +45,13 @@ var dc2DashboardControllers = angular.module('dc2DashboardControllers', []);
 var dc2Factories = angular.module('dc2Factories', []);
 
 
-function dc2ResourceInterceptor($rootScope) {
+'use strict';
+
+
+var dc2Directives = angular.module('dc2Directives', []);
+
+
+function dc2ResourceInterceptor($rootScope, $q) {
   return {
     request: function(config) {
       if ('auth_token' in $rootScope && 'auth_user' in $rootScope) {
@@ -56,15 +68,15 @@ function dc2ResourceInterceptor($rootScope) {
     response: function(config) {
       return config;
     },
-    responseError: function(config) {
+    responseError: function(rejection) {
       console.log('in responseError')
-      console.log(config);
+      console.log(rejection);
       return $q.reject(rejection)
     }
   }
 }
 
-dc2Factories.factory('dc2ResourceInterceptor', ['$rootScope', dc2ResourceInterceptor]);
+dc2Factories.factory('dc2ResourceInterceptor', ['$rootScope', '$q', dc2ResourceInterceptor]);
 
 function LoginFactory($resource) {
   return $resource("http://localhost:5000/api/auth/v1/login", {}, {
@@ -93,7 +105,9 @@ function DashBoardCtrl($rootScope, $scope, $location) {
 
 dc2DashboardControllers.controller('DashBoardCtrl', ['$rootScope', '$scope', '$location', DashBoardCtrl]);
 
-function LoginCtrl($rootScope, $scope, $location, LoginFactory, UsersFactory) {
+function LoginCtrl($rootScope, $scope, $location, $routeParams, LoginFactory, UsersFactory) {
+
+  console.log($routeParams);
   $scope.user = {
     'email': null,
     'password': null,
@@ -106,19 +120,42 @@ function LoginCtrl($rootScope, $scope, $location, LoginFactory, UsersFactory) {
       if ('x-dc2-auth-token' in headers() && 'x-dc2-auth-user' in headers()) {
         console.log(headers()['x-dc2-auth-token']);
         console.log(headers()['x-dc2-auth-user']);
-        $rootScope.authenticated=false;
+        $rootScope.authenticated=true;
         $rootScope.auth_token = headers()['x-dc2-auth-token'];
         $rootScope.auth_user = headers()['x-dc2-auth-user'];
         console.log('in doLogin');
         console.log($rootScope)
-
+        if ('user' in data) {
+          $rootScope.user = data['user'];
+        }
       }
+      if ($rootScope.authenticated) {
+        $location.path('/');
+      }
+
     }, function(errors) {
-      console.log('in login error')
-      console.log(errors);
+      alert('Authentication Error!')
     });
 
+    $scope.doLogout = function() {
+      console.log('in doLogout')
+    }
   }
 }
 
-dc2DashboardControllers.controller('LoginCtrl', ['$rootScope', '$scope', '$location', 'LoginFactory', 'UsersFactory', LoginCtrl]);
+dc2DashboardControllers.controller('LoginCtrl', ['$rootScope', '$scope', '$location', '$routeParams', 'LoginFactory', 'UsersFactory', LoginCtrl]);
+
+
+function DirectiveNavbar() {
+	console.log('in Directive')
+	return {
+		templateUrl: 'partials/directives/navbar.html',
+		restrict: 'E',
+		scope: {
+			authenticated: "=",
+			user: "="
+		}
+	}
+}
+
+dc2Directives.directive('navbar', [DirectiveNavbar])

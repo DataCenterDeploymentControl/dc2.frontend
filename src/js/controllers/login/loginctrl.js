@@ -1,4 +1,6 @@
-function LoginCtrl($rootScope, $scope, $location, LoginFactory, UsersFactory) {
+function LoginCtrl($rootScope, $scope, $location, $routeParams, LoginFactory, UsersFactory) {
+
+  console.log($routeParams);
   $scope.user = {
     'email': null,
     'password': null,
@@ -11,19 +13,27 @@ function LoginCtrl($rootScope, $scope, $location, LoginFactory, UsersFactory) {
       if ('x-dc2-auth-token' in headers() && 'x-dc2-auth-user' in headers()) {
         console.log(headers()['x-dc2-auth-token']);
         console.log(headers()['x-dc2-auth-user']);
-        $rootScope.authenticated=false;
+        $rootScope.authenticated=true;
         $rootScope.auth_token = headers()['x-dc2-auth-token'];
         $rootScope.auth_user = headers()['x-dc2-auth-user'];
         console.log('in doLogin');
         console.log($rootScope)
-
+        if ('user' in data) {
+          $rootScope.user = data['user'];
+        }
       }
+      if ($rootScope.authenticated) {
+        $location.path('/');
+      }
+
     }, function(errors) {
-      console.log('in login error')
-      console.log(errors);
+      alert('Authentication Error!')
     });
 
+    $scope.doLogout = function() {
+      console.log('in doLogout')
+    }
   }
 }
 
-dc2DashboardControllers.controller('LoginCtrl', ['$rootScope', '$scope', '$location', 'LoginFactory', 'UsersFactory', LoginCtrl]);
+dc2DashboardControllers.controller('LoginCtrl', ['$rootScope', '$scope', '$location', '$routeParams', 'LoginFactory', 'UsersFactory', LoginCtrl]);
