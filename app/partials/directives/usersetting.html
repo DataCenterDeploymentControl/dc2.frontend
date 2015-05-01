@@ -1,0 +1,35 @@
+
+<div class="panel panel-primary">
+	<div class="panel-heading"><h3 class="panel-title">User Details of {{user.username}} ({{user.name}})<span class="glyphicon glyphicon-edit pull-right"></span></h3></div>
+	<div class="panel-body">
+		<form>
+			<div class="row">
+				<div class="col-lg-6">
+					<div class="form-group">
+						<label for="username">Username</label>
+						<input type="text" ng-model="user.username" class="form-control" placeholder="Username"/>
+					</div>
+					<div class="form-group">
+						<label for="name">Name</label>
+						<input type="text" ng-model="user.name" class="form-control" placeholder="Name"/>
+					</div>
+					<div class="form-group">
+						<label for="email">E-Mail</label>
+						<input type="text" ng-model="user.email" class="form-control" placeholder="E-Mail"/>
+					</div>
+				</div>
+				<div class="col-lg-6">
+					<div class="form-group">
+						<label for="groups">Groups</label>
+						<select class="form-control" size="10">
+							<option ng-repeat="group in user.groups" value="group">{{group}}</option>
+						</select>
+					</div>
+				</div>
+				<div class="col-lg-12">
+					<button class="btn btn-primary pull-right">Save</button>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
