@@ -9,7 +9,7 @@
     "bower": "*",
     "grunt": "*",
     "grunt-cli": "*",
-    "grunt-bower-install": "*",
+    "grunt-wiredep": "*",
     "grunt-contrib-concat": "*"
   },
   "scripts": {
