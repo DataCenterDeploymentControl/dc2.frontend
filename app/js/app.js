@@ -5,6 +5,7 @@ var DC2Frontend = angular.module('DC2Frontend', [
   'ngResource',
   'ui.bootstrap',
   'toaster',
+  'ngStorage',
   'dc2DashboardControllers',
   'dc2Factories',
   'dc2Directives'
@@ -18,8 +19,12 @@ DC2Frontend.config(['$routeProvider',
         controller: 'LoginCtrl'
       }).
       when('/logout', {
-        templateUrl: 'partials/login/login.html',
-        controller: 'LoginCtrl'
+        templateUrl: 'partials/login/logout.html',
+        controller: 'LogoutCtrl'
+      }).
+      when('/user/:action', {
+        templateUrl: 'partials/user/index.html',
+        controller: 'AdminUserController'
       }).
       otherwise({
         templateUrl: 'partials/main/index.html',
@@ -96,18 +101,33 @@ function UsersFactory($resource, dc2ResourceInterceptor) {
 
 dc2Factories.factory('UsersFactory', ['$resource', 'dc2ResourceInterceptor', UsersFactory]);
 
-function DashBoardCtrl($rootScope, $scope, $location) {
-  if ($rootScope.authenticated == null || $rootScope.authenticated == false) {
-    console.log('not authenticated')
+function AdminUserController($scope, $localStorage, $location, $routeParams) {
+  $scope.$storage = $localStorage;
+  if (! $scope.$storage.authenticated) {
     $location.path('/login');
+  }
+  console.log($routeParams.action);
+  $scope.viewAction = null
+  if ('action' in $routeParams && $routeParams.action == 'me') {
+    // Show user settings
+    $scope.viewAction = $routeParams.action
   }
 }
 
-dc2DashboardControllers.controller('DashBoardCtrl', ['$rootScope', '$scope', '$location', DashBoardCtrl]);
+dc2DashboardControllers.controller('AdminUserController', ['$scope', '$localStorage', '$location', '$routeParams', AdminUserController]);
 
-function LoginCtrl($rootScope, $scope, $location, $routeParams, LoginFactory, UsersFactory) {
+function DashBoardCtrl($scope, $location, $localStorage) {
+  if ($localStorage.authenticated == null || $localStorage.authenticated == false) {
+    console.log('not authenticated')
+    $location.path('/login');
+  }
+  $scope.$storage = $localStorage;
+}
 
-  console.log($routeParams);
+dc2DashboardControllers.controller('DashBoardCtrl', ['$scope', '$location', '$localStorage', DashBoardCtrl]);
+
+function LoginCtrl($rootScope, $scope, $location, $localStorage, LoginFactory, UsersFactory) {
+
   $scope.user = {
     'email': null,
     'password': null,
@@ -120,16 +140,17 @@ function LoginCtrl($rootScope, $scope, $location, $routeParams, LoginFactory, Us
       if ('x-dc2-auth-token' in headers() && 'x-dc2-auth-user' in headers()) {
         console.log(headers()['x-dc2-auth-token']);
         console.log(headers()['x-dc2-auth-user']);
-        $rootScope.authenticated=true;
-        $rootScope.auth_token = headers()['x-dc2-auth-token'];
-        $rootScope.auth_user = headers()['x-dc2-auth-user'];
+        $localStorage.authenticated=true;
+        $localStorage.auth_token = headers()['x-dc2-auth-token'];
+        $localStorage.auth_user = headers()['x-dc2-auth-user'];
         console.log('in doLogin');
-        console.log($rootScope)
+        console.log($localStorage);
         if ('user' in data) {
-          $rootScope.user = data['user'];
+          $localStorage.user = data['user'];
         }
       }
-      if ($rootScope.authenticated) {
+      console.log($localStorage.authenticated);
+      if ($localStorage.authenticated) {
         $location.path('/');
       }
 
@@ -137,14 +158,59 @@ function LoginCtrl($rootScope, $scope, $location, $routeParams, LoginFactory, Us
       alert('Authentication Error!')
     });
 
-    $scope.doLogout = function() {
-      console.log('in doLogout')
-    }
   }
 }
 
-dc2DashboardControllers.controller('LoginCtrl', ['$rootScope', '$scope', '$location', '$routeParams', 'LoginFactory', 'UsersFactory', LoginCtrl]);
+dc2DashboardControllers.controller('LoginCtrl', ['$rootScope', '$scope', '$location', '$localStorage', 'LoginFactory', 'UsersFactory', LoginCtrl]);
 
+
+function LogoutCtrl($localStorage, $location) {
+	if ($localStorage.authenticated) {
+		delete $localStorage.authenticated;
+		delete $localStorage.auth_token;
+		delete $localStorage.auth_user;
+		delete $localStorage.user;
+	}
+	$location.path('/login');
+}
+
+dc2DashboardControllers.controller('LogoutCtrl', ['$localStorage', '$location', '$localStorage', LogoutCtrl]);
+
+function UserSettingsController($scope) {
+
+}
+
+dc2Directives.controller('UserSettingsController', ['$scope', UserSettingsController])
+
+function UserSetting() {
+  return {
+    templateUrl: 'partials/directives/usersetting.html',
+    restrict: 'E',
+    scope: {
+      authenticated: '=',
+      user: '='
+    },
+    controller: UserSettingsController
+  }
+}
+
+dc2Directives.directive('userSettings', [UserSetting])
+
+function navBarController($localStorage, $scope) {
+	console.log('in navBarController');
+	$scope.checkGroup = function(user, groupname) {
+		if (user && groupname) {
+			if ('groups' in user) {
+				console.log('groups found in user');
+				if (user.groups.indexOf(groupname) > -1) {
+					return true;
+				}
+			}
+		}
+	}
+}
+
+dc2Directives.controller('navBarController', ['$localStorage', '$scope', navBarController]);
 
 function DirectiveNavbar() {
 	console.log('in Directive')
@@ -154,7 +220,8 @@ function DirectiveNavbar() {
 		scope: {
 			authenticated: "=",
 			user: "="
-		}
+		},
+		controller: navBarController
 	}
 }
 

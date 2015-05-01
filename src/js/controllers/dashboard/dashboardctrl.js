@@ -1,8 +1,9 @@
-function DashBoardCtrl($rootScope, $scope, $location) {
-  if ($rootScope.authenticated == null || $rootScope.authenticated == false) {
+function DashBoardCtrl($scope, $location, $localStorage) {
+  if ($localStorage.authenticated == null || $localStorage.authenticated == false) {
     console.log('not authenticated')
     $location.path('/login');
   }
+  $scope.$storage = $localStorage;
 }
 
-dc2DashboardControllers.controller('DashBoardCtrl', ['$rootScope', '$scope', '$location', DashBoardCtrl]);
+dc2DashboardControllers.controller('DashBoardCtrl', ['$scope', '$location', '$localStorage', DashBoardCtrl]);

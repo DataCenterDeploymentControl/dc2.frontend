@@ -14,6 +14,7 @@
     "angular-resource": "1.3.x",
     "angular-animate": "1.3.x",
     "angular-bootstrap": "*",
-    "angularjs-toaster": "*"
+    "angularjs-toaster": "*",
+    "ngstorage": "*"
   }
 }

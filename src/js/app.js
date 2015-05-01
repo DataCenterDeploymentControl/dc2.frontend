@@ -5,6 +5,7 @@ var DC2Frontend = angular.module('DC2Frontend', [
   'ngResource',
   'ui.bootstrap',
   'toaster',
+  'ngStorage',
   'dc2DashboardControllers',
   'dc2Factories',
   'dc2Directives'
@@ -18,8 +19,12 @@ DC2Frontend.config(['$routeProvider',
         controller: 'LoginCtrl'
       }).
       when('/logout', {
-        templateUrl: 'partials/login/login.html',
-        controller: 'LoginCtrl'
+        templateUrl: 'partials/login/logout.html',
+        controller: 'LogoutCtrl'
+      }).
+      when('/user/:action', {
+        templateUrl: 'partials/user/index.html',
+        controller: 'AdminUserController'
       }).
       otherwise({
         templateUrl: 'partials/main/index.html',

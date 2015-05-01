@@ -28,7 +28,9 @@
             <span class="caret"></span>
           </a>
           <ul class="dropdown-menu" role="menu">
-            <li><a href="#user/settings">Settings</a></li>
+            <li ng-if="checkGroup(user,'admin')"><a href="#administration">Administration</a></li>
+            <li ng-if="checkGroup(user,'admin')" class="divider"></li>
+            <li><a href="#user/me">My Settings</a></li>
             <li class="divider"></li>
             <li><a href="#logout">Logout</a></li>
           </ul>
