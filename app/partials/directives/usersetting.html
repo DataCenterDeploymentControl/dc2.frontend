@@ -1,33 +1,39 @@
 
 <div class="panel panel-primary">
-	<div class="panel-heading"><h3 class="panel-title">User Details of {{user.username}} ({{user.name}})<span class="glyphicon glyphicon-edit pull-right"></span></h3></div>
+	<div class="panel-heading">
+		<h3 class="panel-title">User Details of {{user.username}} ({{user.name}})<span ng-click="doEdit()" ng-if="is_edit==false" class="pointer glyphicon glyphicon-edit pull-right"></span><div class="pull-right"></h3></div>
 	<div class="panel-body">
 		<form>
 			<div class="row">
 				<div class="col-lg-6">
 					<div class="form-group">
 						<label for="username">Username</label>
-						<input type="text" ng-model="user.username" class="form-control" placeholder="Username"/>
+						<input type="text" disabled ng-model="new_user.username" class="form-control" placeholder="Username"/>
 					</div>
 					<div class="form-group">
 						<label for="name">Name</label>
-						<input type="text" ng-model="user.name" class="form-control" placeholder="Name"/>
+						<input type="text" ng-disabled="is_edit==false" ng-model="new_user.name" class="form-control" placeholder="Name"/>
 					</div>
 					<div class="form-group">
 						<label for="email">E-Mail</label>
-						<input type="text" ng-model="user.email" class="form-control" placeholder="E-Mail"/>
+						<input type="text" ng-disabled="is_edit==false" ng-model="new_user.email" class="form-control" placeholder="E-Mail"/>
 					</div>
 				</div>
 				<div class="col-lg-6">
 					<div class="form-group">
 						<label for="groups">Groups</label>
-						<select class="form-control" size="10">
-							<option ng-repeat="group in user.groups" value="group">{{group}}</option>
+						<select ng-model="new_user.groups" ng-disabled="is_edit==false" class="form-control" size="10" multiple>
+							<option ng-repeat="group in new_user.groups" value="{{group}}">{{group}}</option>
 						</select>
 					</div>
 				</div>
+			</div>
+			<div class="row">
 				<div class="col-lg-12">
-					<button class="btn btn-primary pull-right">Save</button>
+					<div class="pull-right">
+						<button ng-if="is_edit" ng-click="doReset()" class="btn btn-xs btn-danger"><span class="glyphicon glyphicon-remove"></span> Cancel</button>
+						<button class="btn btn-xs btn-success" ng-click="doSave()" ng-if="is_edit"><span class="glyphicon glyphicon-ok"></span> Save</button>
+					</div>
 				</div>
 			</div>
 		</form>

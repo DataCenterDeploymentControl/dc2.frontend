@@ -56,15 +56,22 @@ var dc2Factories = angular.module('dc2Factories', []);
 var dc2Directives = angular.module('dc2Directives', []);
 
 
-function dc2ResourceInterceptor($rootScope, $q) {
+function LoginFactory($resource) {
+  return $resource("http://localhost:5000/api/auth/v1/login", {}, {
+    post: {method: "POST"}
+  });
+}
+
+dc2Factories.factory('LoginFactory', ['$resource', LoginFactory]);
+function dc2ResourceInterceptor($localStorage, $q, $location) {
   return {
     request: function(config) {
-      if ('auth_token' in $rootScope && 'auth_user' in $rootScope) {
-        if ($rootScope.auth_token != null) {
-          config.headers['X-DC2-Auth-Token']=$rootScope.auth_token;  
+      if ('auth_token' in $localStorage && 'auth_user' in $localStorage) {
+        if ($localStorage.auth_token != null) {
+          config.headers['X-DC2-Auth-Token']=$localStorage.auth_token;  
         }
-        if ($rootScope.auth_user != null) {
-          config.headers['X-DC2-Auth-User']=$rootScope.auth_user;
+        if ($localStorage.auth_user != null) {
+          config.headers['X-DC2-Auth-User']=$localStorage.auth_user;
         }
       }
       console.log(config);
@@ -76,25 +83,39 @@ function dc2ResourceInterceptor($rootScope, $q) {
     responseError: function(rejection) {
       console.log('in responseError')
       console.log(rejection);
-      return $q.reject(rejection)
+      if (rejection.status == 401) { // Unauthorized
+        $location.path('/login');
+      } else {
+        return $q.reject(rejection);
+      }
     }
   }
 }
 
-dc2Factories.factory('dc2ResourceInterceptor', ['$rootScope', '$q', dc2ResourceInterceptor]);
+dc2Factories.factory('dc2ResourceInterceptor', ['$localStorage', '$q', '$location', dc2ResourceInterceptor]);
 
-function LoginFactory($resource) {
-  return $resource("http://localhost:5000/api/auth/v1/login", {}, {
-    post: {method: "POST"}
-  });
-}
-
-dc2Factories.factory('LoginFactory', ['$resource', LoginFactory]);
-function UsersFactory($resource, dc2ResourceInterceptor) {
-  return $resource("http://localhost:5000/api/admin/v1/users", {}, {
+function GroupsFactory($resource) {
+  return $resource("http://localhost:5000/api/admin/v1/groups",{}, {
     query: {
       method:'GET',
       isArray:true
+    }
+  });
+}
+
+dc2Factories.factory('GroupsFactory', ['$resource', GroupsFactory]);
+
+function UsersFactory($resource, dc2ResourceInterceptor) {
+  return $resource("http://localhost:5000/api/admin/v1/users/:username", {username:null}, {
+    query: {
+      method:'GET',
+      isArray:true
+    },
+    update: {
+      method:'put',
+      params:{username:'@username'},
+      data:'@user',
+      isArray:false
     }
   });
 }
@@ -117,11 +138,11 @@ function AdminUserController($scope, $localStorage, $location, $routeParams) {
 dc2DashboardControllers.controller('AdminUserController', ['$scope', '$localStorage', '$location', '$routeParams', AdminUserController]);
 
 function DashBoardCtrl($scope, $location, $localStorage) {
-  if ($localStorage.authenticated == null || $localStorage.authenticated == false) {
-    console.log('not authenticated')
+  $scope.$storage = $localStorage;
+  if (! $scope.$storage.authenticated) {
     $location.path('/login');
   }
-  $scope.$storage = $localStorage;
+  
 }
 
 dc2DashboardControllers.controller('DashBoardCtrl', ['$scope', '$location', '$localStorage', DashBoardCtrl]);
@@ -176,11 +197,38 @@ function LogoutCtrl($localStorage, $location) {
 
 dc2DashboardControllers.controller('LogoutCtrl', ['$localStorage', '$location', '$localStorage', LogoutCtrl]);
 
-function UserSettingsController($scope) {
+function UserSettingsController($scope, UsersFactory, GroupsFactory) {
+  $scope.new_user = {};
+  angular.copy($scope.user, $scope.new_user);
 
+  $scope.is_edit = false;
+  $scope.doEdit = function() {
+    $scope.is_edit = true;
+  }
+  $scope.doSave = function() {
+    console.log('$scope.user');
+    console.log($scope.user);
+    console.log('$scope.new_user');
+    console.log($scope.new_user);
+    $scope.is_edit = false; 
+    console.log($scope.new_user);
+    UsersFactory.update({username: $scope.new_user.username}, $scope.new_user, function(data) {
+      console.log('in user update');
+      console.log(data);
+      angular.copy($scope.new_user, $scope.user);
+    }, function(error) {
+      angular.copy($scope.user, $scope.new_user);
+      console.log('in user update error');
+      console.log(error);
+    })
+  }
+  $scope.doReset = function() {
+    $scope.is_edit=false;
+    angular.copy($scope.user, $scope.new_user);
+  }
 }
 
-dc2Directives.controller('UserSettingsController', ['$scope', UserSettingsController])
+dc2Directives.controller('UserSettingsController', ['$scope', 'UsersFactory', 'GroupsFactory', UserSettingsController])
 
 function UserSetting() {
   return {
