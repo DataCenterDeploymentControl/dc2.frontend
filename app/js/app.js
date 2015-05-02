@@ -26,6 +26,10 @@ DC2Frontend.config(['$routeProvider',
         templateUrl: 'partials/user/index.html',
         controller: 'AdminUserController'
       }).
+      // when('/administration', {
+      //   templateUrl: 'partials/administration/index.html',
+      //   controller: 'AdministrationController'
+      // }).
       otherwise({
         templateUrl: 'partials/main/index.html',
         controller: 'DashBoardCtrl'
@@ -200,7 +204,12 @@ dc2DashboardControllers.controller('LogoutCtrl', ['$localStorage', '$location', 
 function UserSettingsController($scope, UsersFactory, GroupsFactory) {
   $scope.new_user = {};
   angular.copy($scope.user, $scope.new_user);
-
+  $scope.all_groups = null
+  GroupsFactory.query(function(data) {
+    console.log('GroupsFactory data');
+    console.log(data);
+    $scope.all_groups = data;
+  })
   $scope.is_edit = false;
   $scope.doEdit = function() {
     $scope.is_edit = true;

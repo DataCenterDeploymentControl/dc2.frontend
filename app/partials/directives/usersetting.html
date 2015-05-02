@@ -23,7 +23,7 @@
 					<div class="form-group">
 						<label for="groups">Groups</label>
 						<select ng-model="new_user.groups" ng-disabled="is_edit==false" class="form-control" size="10" multiple>
-							<option ng-repeat="group in new_user.groups" value="{{group}}">{{group}}</option>
+							<option ng-repeat="group in all_groups" value="{{group.groupname}}">{{group.groupname}}</option>
 						</select>
 					</div>
 				</div>
