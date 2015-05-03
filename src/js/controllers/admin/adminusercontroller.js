@@ -5,6 +5,7 @@ function AdminUserController($scope, $localStorage, $location, $routeParams) {
   }
   console.log($routeParams.action);
   $scope.viewAction = null
+  
   if ('action' in $routeParams && $routeParams.action == 'me') {
     // Show user settings
     $scope.viewAction = $routeParams.action

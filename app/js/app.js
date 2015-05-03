@@ -26,10 +26,14 @@ DC2Frontend.config(['$routeProvider',
         templateUrl: 'partials/user/index.html',
         controller: 'AdminUserController'
       }).
-      // when('/administration', {
-      //   templateUrl: 'partials/administration/index.html',
-      //   controller: 'AdministrationController'
-      // }).
+      when('/administration/users', {
+        templateUrl: 'partials/administration/users.html',
+        controller: 'AdministrationUsersController'
+      }).      
+      when('/administration', {
+        templateUrl: 'partials/administration/index.html',
+        controller: 'AdministrationController'
+      }).
       otherwise({
         templateUrl: 'partials/main/index.html',
         controller: 'DashBoardCtrl'
@@ -110,7 +114,7 @@ function GroupsFactory($resource) {
 dc2Factories.factory('GroupsFactory', ['$resource', GroupsFactory]);
 
 function UsersFactory($resource, dc2ResourceInterceptor) {
-  return $resource("http://localhost:5000/api/admin/v1/users/:username", {username:null}, {
+  return $resource("http://localhost:5000/api/admin/v1/users/:username/:state", {username:null, state:null}, {
     query: {
       method:'GET',
       isArray:true
@@ -120,11 +124,122 @@ function UsersFactory($resource, dc2ResourceInterceptor) {
       params:{username:'@username'},
       data:'@user',
       isArray:false
+    },
+    get: {
+      method:'get',
+      params:{username:'@username'},
+      isArray:false
+    },
+    new: {
+      method:'post',
+      data:'@user',
+      isArray:false
+    },
+    remove: {
+      method:'delete',
+      params:{username: '@username'},
+      isArray:false
+    },
+    enable: {
+      method:'get',
+      params:{username: '@username', state:'enable'},
+      isArray:false
+    },
+    disable: {
+      method:'get',
+      params:{username: '@username', state:'disable'},
+      isArray:false
     }
   });
 }
 
 dc2Factories.factory('UsersFactory', ['$resource', 'dc2ResourceInterceptor', UsersFactory]);
+
+function AdministrationController($scope, $localStorage, $location, $routeParams) {
+  $scope.$storage = $localStorage;
+  if (! $scope.$storage.authenticated) {
+    $location.path('/login');
+  }
+  if ('action' in $routeParams) {
+    console.log($routeParams.action)
+  }
+  $scope.doAdminUsers = function() {
+    $location.path('/administration/users');
+  }
+  $scope.doAdminGroups = function() {
+    $location.path('/administration/groups');
+  }
+}
+
+dc2DashboardControllers.controller('AdministrationController', ['$scope', '$localStorage', '$location', '$routeParams', AdministrationController]);
+
+function AdministrationUsersController($scope, $localStorage, $location, toaster, UsersFactory) {
+  console.log('in AdministrationUsersController');
+  $scope.$storage = $localStorage;
+  if (! $scope.$storage.authenticated) {
+    $location.path('/login');
+  }
+  $scope.add_user = false;
+  $scope.edit_user = false;
+  $scope.users = null;
+  $scope.doList = function() {
+    UsersFactory.query(function(data) {
+      console.log(data)
+      $scope.users = data
+    }, function(error) {
+      console.log('AdministrationUsersController: error from usersfactory');
+    });
+  }
+  $scope.doAddUser = function() {
+    $scope.add_user = true;
+    $scope.edit_user = false;
+  }
+  $scope.doDelete = function(user) {
+    console.log('in doDelete');
+    if (user != null) {
+      UsersFactory.remove({username: user.username}, function(data) {
+        console.log('doDelete: removing '+user.username);
+        console.log(data);
+        $scope.doList();
+        toaster.pop('success', 'User: '+user.username+' deleted');
+      }, function(error) {
+        console.log('doDelete: error');
+        console.log(error);
+        toaster.pop('error', 'An Error Occured');
+      });
+    }
+  }
+  $scope.doEnable = function(user) {
+    console.log('in doEnable');
+    if (user != null) {
+      UsersFactory.enable({username: user.username}, function(data) {
+        console.log('in doEnable: enable success');
+        $scope.doList();
+      }, function(error) {
+        console.log('in doEnable: enable unsuccessful');
+      });
+    }
+  }
+  $scope.doDisable = function(user) {
+    console.log('in doDisable');
+    if (user != null) {
+      UsersFactory.disable({username: user.username}, function(data) {
+        console.log('in doDisable: disable success');
+        $scope.doList();
+      }, function(error) {
+        console.log('in doDisable: disable unsuccessfull');
+      });
+    }
+  }
+  $scope.doEdit = function(user) {
+    $scope.edit_user = true;
+    $scope.add_user = false;
+    $scope.user_to_edit = user;
+  }
+  $scope.doList();
+}
+
+dc2DashboardControllers.controller('AdministrationUsersController', ['$scope', '$localStorage', '$location', 'toaster', 'UsersFactory', AdministrationUsersController]);
 
 function AdminUserController($scope, $localStorage, $location, $routeParams) {
   $scope.$storage = $localStorage;
@@ -133,6 +248,7 @@ function AdminUserController($scope, $localStorage, $location, $routeParams) {
   }
   console.log($routeParams.action);
   $scope.viewAction = null
+  
   if ('action' in $routeParams && $routeParams.action == 'me') {
     // Show user settings
     $scope.viewAction = $routeParams.action
@@ -160,6 +276,7 @@ function LoginCtrl($rootScope, $scope, $location, $localStorage, LoginFactory, U
   }
 
   $scope.doLogin = function(login) {
+    console.log('LoginCtrl.doLogin()');
     console.log(login);
     LoginFactory.post(login, function(data, headers) {
       if ('x-dc2-auth-token' in headers() && 'x-dc2-auth-user' in headers()) {
@@ -201,43 +318,80 @@ function LogoutCtrl($localStorage, $location) {
 
 dc2DashboardControllers.controller('LogoutCtrl', ['$localStorage', '$location', '$localStorage', LogoutCtrl]);
 
-function UserSettingsController($scope, UsersFactory, GroupsFactory) {
-  $scope.new_user = {};
+function UserSettingsController($scope, toaster, UsersFactory, GroupsFactory) {
+  console.log('UserSettingsController');
+  console.log($scope.newUser);
+  console.log(($scope.newUser==true && $scope.is_edit==false))
+  if ($scope.newUser) {
+    $scope.new_user = {
+      'username': null,
+      'name': null,
+      'email': null,
+      'password': null
+    }; 
+    $scope.is_edit=true;
+  } else {
+    $scope.new_user = {};
+    if ($scope.editEnable) {
+      $scope.is_edit = true;
+    } else {
+      $scope.is_edit = false;
+    }
+
+    UsersFactory.get({username: $scope.user.username}, function(data) {
+      console.log(data);
+      $scope.user = data;
+    });
+  }
   angular.copy($scope.user, $scope.new_user);
   $scope.all_groups = null
-  GroupsFactory.query(function(data) {
-    console.log('GroupsFactory data');
-    console.log(data);
-    $scope.all_groups = data;
-  })
-  $scope.is_edit = false;
+  $scope.list = function() {
+    GroupsFactory.query(function(data) {
+      console.log('GroupsFactory list data');
+      console.log(data);
+      $scope.all_groups = data;
+    }, function(error) {
+      console.log('GroupsFactory list error');
+      console.log(error);
+    });
+  }
   $scope.doEdit = function() {
     $scope.is_edit = true;
   }
   $scope.doSave = function() {
-    console.log('$scope.user');
-    console.log($scope.user);
-    console.log('$scope.new_user');
-    console.log($scope.new_user);
     $scope.is_edit = false; 
-    console.log($scope.new_user);
-    UsersFactory.update({username: $scope.new_user.username}, $scope.new_user, function(data) {
-      console.log('in user update');
-      console.log(data);
-      angular.copy($scope.new_user, $scope.user);
-    }, function(error) {
-      angular.copy($scope.user, $scope.new_user);
-      console.log('in user update error');
-      console.log(error);
-    })
+    if (! $scope.newUser) {
+      UsersFactory.update({username: $scope.new_user.username}, $scope.new_user, function(data) {
+        angular.copy($scope.new_user, $scope.user);
+      }, function(error) {
+        angular.copy($scope.user, $scope.new_user);
+      });
+    } else {
+      UsersFactory.new($scope.new_user, function(data) {
+        console.log('in User Save')
+        console.log(data)
+        toaster.pop('success', 'User '+data.user.username+ 'created');
+        $location.path('/administration/users');
+      }, function(error) {
+        console.log('in user Save error');
+        console.log(error);
+        toaster.pop('error', 'An error occured');
+      })
+    }
   }
   $scope.doReset = function() {
-    $scope.is_edit=false;
+    if (!$scope.newUser) {
+      $scope.is_edit=false; 
+    } else {
+      console.log($scope.$parent.$parent);
+      $scope.$parent.$parent.add_user=false;
+    }
     angular.copy($scope.user, $scope.new_user);
   }
+  $scope.list();
 }
 
-dc2Directives.controller('UserSettingsController', ['$scope', 'UsersFactory', 'GroupsFactory', UserSettingsController])
+dc2Directives.controller('UserSettingsController', ['$scope', 'toaster', 'UsersFactory', 'GroupsFactory', UserSettingsController])
 
 function UserSetting() {
   return {
@@ -245,7 +399,9 @@ function UserSetting() {
     restrict: 'E',
     scope: {
       authenticated: '=',
-      user: '='
+      user: '=',
+      newUser: '=',
+      editEnable: '='
     },
     controller: UserSettingsController
   }
@@ -253,10 +409,10 @@ function UserSetting() {
 
 dc2Directives.directive('userSettings', [UserSetting])
 
-function navBarController($localStorage, $scope) {
-	console.log('in navBarController');
-	$scope.checkGroup = function(user, groupname) {
-		if (user && groupname) {
+function navBarController() {
+	var self = this;
+	this.checkGroup = function(user, groupname) {
+		if (groupname) {
 			if ('groups' in user) {
 				console.log('groups found in user');
 				if (user.groups.indexOf(groupname) > -1) {
@@ -265,20 +421,24 @@ function navBarController($localStorage, $scope) {
 			}
 		}
 	}
+	this.is_admin = this.checkGroup(this.user,'admin');
+	this.is_user = this.checkGroup(this.user,'user');
 }
 
-dc2Directives.controller('navBarController', ['$localStorage', '$scope', navBarController]);
+dc2Directives.controller('navBarController', [navBarController]);
 
 function DirectiveNavbar() {
 	console.log('in Directive')
 	return {
 		templateUrl: 'partials/directives/navbar.html',
 		restrict: 'E',
-		scope: {
+		scope:  {
 			authenticated: "=",
 			user: "="
 		},
-		controller: navBarController
+		bindToController: true,
+		controller: 'navBarController',
+		controllerAs: 'navBarCtrl'
 	}
 }
 

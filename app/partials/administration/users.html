@@ -1,0 +1,55 @@
+<navbar authenticated="$storage.authenticated" user="$storage.user"></navbar>
+<div class="container">
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="page-header"><h1>Users</h1></div>
+		</div>
+	</div>
+	<div ng-if="!add_user && !edit_user">
+		<div class="row">
+			<div class="col-lg-12">
+				<table class="table table-condensened table-hover table-bordered">
+					<thead>
+						<tr>
+							<th>Username</th>
+							<th>E-Mail</th>
+							<th>Name</th>
+							<th>Action</th>							
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="user in users" ng-class="{'danger':user.is_deleted, 'success':!user.is_deleted}">
+							<td>{{user.username}}</td>
+							<td>{{user.email}}</td>
+							<td>{{user.name}}</td>
+							<td align="right">
+								<button ng-click="doEdit(user)" class="btn btn-primary btn-xs"><i class="glyphicon glyphicon-edit"></i></button>
+								<button ng-if="! user.is_deleted" ng-click="doDisable(user)" class="btn btn-danger btn-xs"><i class="glyphicon glyphicon-remove"></i></button>
+								<button ng-if="user.is_deleted" ng-click="doEnable(user)" class="btn btn-warning btn-xs"><i class="glyphicon glyphicon-ok"></i></button>
+							</td>
+
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-lg-12">
+				<div class="pull-right">
+					<button ng-click="doAddUser()" class="btn btn-sm btn-primary">Add User</button>
+				</div>
+			</div>
+		</div>		
+	</div>
+	<div ng-if="add_user && !edit_user">
+		<user-settings new-user="true" user="new_user" edit-enable="true"></user-settings>
+	</div>
+	<div ng-if="! add_user && edit_user">
+		<user-settings new-user="false" user="user_to_edit" edit-enable="true"></user-settings>
+	</div>
+	<div class="row">
+		<div class="col-lg-12">
+			<a href="#/administration" class="btn btn-link pull-left"><i class="glyphicon glyphicon-chevron-left"></i> Back to Administration</a>
+		</div>
+	</div>
+</div>

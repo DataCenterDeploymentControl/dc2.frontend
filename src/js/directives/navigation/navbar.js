@@ -1,8 +1,8 @@
 
-function navBarController($localStorage, $scope) {
-	console.log('in navBarController');
-	$scope.checkGroup = function(user, groupname) {
-		if (user && groupname) {
+function navBarController() {
+	var self = this;
+	this.checkGroup = function(user, groupname) {
+		if (groupname) {
 			if ('groups' in user) {
 				console.log('groups found in user');
 				if (user.groups.indexOf(groupname) > -1) {
@@ -11,20 +11,24 @@ function navBarController($localStorage, $scope) {
 			}
 		}
 	}
+	this.is_admin = this.checkGroup(this.user,'admin');
+	this.is_user = this.checkGroup(this.user,'user');
 }
 
-dc2Directives.controller('navBarController', ['$localStorage', '$scope', navBarController]);
+dc2Directives.controller('navBarController', [navBarController]);
 
 function DirectiveNavbar() {
 	console.log('in Directive')
 	return {
 		templateUrl: 'partials/directives/navbar.html',
 		restrict: 'E',
-		scope: {
+		scope:  {
 			authenticated: "=",
 			user: "="
 		},
-		controller: navBarController
+		bindToController: true,
+		controller: 'navBarController',
+		controllerAs: 'navBarCtrl'
 	}
 }
 

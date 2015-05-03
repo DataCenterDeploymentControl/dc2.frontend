@@ -26,10 +26,14 @@ DC2Frontend.config(['$routeProvider',
         templateUrl: 'partials/user/index.html',
         controller: 'AdminUserController'
       }).
-      // when('/administration', {
-      //   templateUrl: 'partials/administration/index.html',
-      //   controller: 'AdministrationController'
-      // }).
+      when('/administration/users', {
+        templateUrl: 'partials/administration/users.html',
+        controller: 'AdministrationUsersController'
+      }).      
+      when('/administration', {
+        templateUrl: 'partials/administration/index.html',
+        controller: 'AdministrationController'
+      }).
       otherwise({
         templateUrl: 'partials/main/index.html',
         controller: 'DashBoardCtrl'

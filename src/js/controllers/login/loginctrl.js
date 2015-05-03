@@ -7,6 +7,7 @@ function LoginCtrl($rootScope, $scope, $location, $localStorage, LoginFactory, U
   }
 
   $scope.doLogin = function(login) {
+    console.log('LoginCtrl.doLogin()');
     console.log(login);
     LoginFactory.post(login, function(data, headers) {
       if ('x-dc2-auth-token' in headers() && 'x-dc2-auth-user' in headers()) {
