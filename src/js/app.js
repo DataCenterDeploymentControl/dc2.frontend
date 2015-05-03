@@ -34,6 +34,11 @@ DC2Frontend.config(['$routeProvider',
         templateUrl: 'partials/administration/index.html',
         controller: 'AdministrationController'
       }).
+      when('/ipam/ipnetworks', {
+        templateUrl: 'partials/ipam/ipnetworks/index.html',
+        controller: 'IPAMIpNetworkController',
+        controllerAs: 'IPNetworkCtrl'
+      }).
       otherwise({
         templateUrl: 'partials/main/index.html',
         controller: 'DashBoardCtrl'
