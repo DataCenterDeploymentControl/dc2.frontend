@@ -12,19 +12,19 @@
 				</thead>
 				<tbody>
 					<tr ng-repeat="ipnetwork in IPNetworkCtrl.ipnetworks">
-						<td>{{ipnetwork.ipnetwork}}</td>
+						<td><a href="#/ipam/ipnetworks/details?ipnetwork={{ipnetwork.ipnetwork|encodeUri}}">{{ipnetwork.ipnetwork}}</td>
 						<td>{{ipnetwork.description}}</td>
 						<td>
 							<button class="btn btn-danger btn-xs pull-right"><i class="glyphicon glyphicon-remove"></i></button>
 						</td>
 					</tr>
 					<tr ng-if="IPNetworkCtrl.add_new">
-						<form class="form-horizontal">
-							<td><input type="text" class="form-control" ng-model="IPNetworkCtrl.new_ipnetwork.ipnetwork" placeholder="IPNetwork in CIDR Notation"/></td>
+						<form name="myForm" novalidate class="form-horizontal">
+							<td><input type="text" class="form-control" name="myIpnetwork" ng-model="IPNetworkCtrl.new_ipnetwork.ipnetwork" placeholder="IPNetwork in CIDR Notation"/></td>
 							<td><input type="text" class="form-control" ng-model="IPNetworkCtrl.new_ipnetwork.description" placeholder="Description"/></td>
 							<td><button ng-click="IPNetworkCtrl.doSave(IPNetworkCtrl.new_ipnetwork)" class="btn btn btn-primary btn-sm pull-right" value=""><i class="glyphicon glyphicon-ok"></i></button></td>
-						</form>
 					</tr>
+					</form>
 				</tbody>
 			</table>
 		</div>

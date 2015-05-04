@@ -1,4 +1,4 @@
-function UserSettingsController($scope, toaster, UsersFactory, GroupsFactory) {
+function UserSettingsController($scope, $location, toaster, UsersFactory, GroupsFactory) {
   console.log('UserSettingsController');
   console.log($scope.newUser);
   console.log(($scope.newUser==true && $scope.is_edit==false))
@@ -51,11 +51,14 @@ function UserSettingsController($scope, toaster, UsersFactory, GroupsFactory) {
         console.log('in User Save')
         console.log(data)
         toaster.pop('success', 'User '+data.user.username+ 'created');
-        $location.path('/administration/users');
+        $scope.add_user=false;
+        $scope.edit_user=false;        
       }, function(error) {
         console.log('in user Save error');
         console.log(error);
         toaster.pop('error', 'An error occured');
+        $scope.add_user=false;
+        $scope.edit_user=false;        
       })
     }
   }
@@ -71,7 +74,7 @@ function UserSettingsController($scope, toaster, UsersFactory, GroupsFactory) {
   $scope.list();
 }
 
-dc2Directives.controller('UserSettingsController', ['$scope', 'toaster', 'UsersFactory', 'GroupsFactory', UserSettingsController])
+dc2Directives.controller('UserSettingsController', ['$scope', '$location', 'toaster', 'UsersFactory', 'GroupsFactory', UserSettingsController])
 
 function UserSetting() {
   return {

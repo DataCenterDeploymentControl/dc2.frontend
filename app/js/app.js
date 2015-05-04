@@ -6,6 +6,7 @@ var DC2Frontend = angular.module('DC2Frontend', [
   'ui.bootstrap',
   'toaster',
   'ngStorage',
+  'rt.encodeuri',
   'dc2DashboardControllers',
   'dc2Factories',
   'dc2Directives'
@@ -34,6 +35,11 @@ DC2Frontend.config(['$routeProvider',
         templateUrl: 'partials/administration/index.html',
         controller: 'AdministrationController'
       }).
+      when('/ipam/ipnetworks/details', {
+        templateUrl: 'partials/ipam/ipnetworks/ipnetwork_details.html',
+        controller: 'IPAMIpNetworkDetailController',
+        controllerAs: 'IPNetworkDetailCtrl'
+      }).      
       when('/ipam/ipnetworks', {
         templateUrl: 'partials/ipam/ipnetworks/index.html',
         controller: 'IPAMIpNetworkController',
@@ -122,6 +128,19 @@ function IPNetworkFactory($resource) {
 }
 
 dc2Factories.factory('IPNetworkFactory', ['$resource', IPNetworkFactory]);
+
+
+function IPNetworkInfoFactory($resource) {
+  return $resource("http://localhost:5000/api/ipam/v1/ipnetworks/info/:ipnetwork", {ipnetwork:null}, {
+    get: {
+      method:'GET',
+      isArray:false,
+      params:{ipnetwork:"@ipnetwork"}
+    } 
+  })
+}
+
+dc2Factories.factory('IPNetworkInfoFactory', ['$resource', IPNetworkInfoFactory]);
 
 function GroupsFactory($resource) {
   return $resource("http://localhost:5000/api/admin/v1/groups",{}, {
@@ -288,19 +307,45 @@ function DashBoardCtrl($scope, $location, $localStorage) {
 
 dc2DashboardControllers.controller('DashBoardCtrl', ['$scope', '$location', '$localStorage', DashBoardCtrl]);
 
-function IPAMIpNetworkController($scope, $location, $localStorage, IPNetworkFactory) {
+function IPAMIpNetworkDetailController($scope, $location, $localStorage, $routeParams, toaster, IPNetworkFactory,IPNetworkInfoFactory) {
+  var self = this;
+  console.log('here');
+  $scope.$storage = $localStorage;
+  if (! $scope.$storage.authenticated) {
+    $location.path('/login');
+  }
+  console.log($routeParams.ipnetwork);
+  this.ipnetwork = $routeParams.ipnetwork;
+  this.getInfo = function() {
+    console.log('in getInfo');
+    IPNetworkInfoFactory.get({ipnetwork: self.ipnetwork}, function(data) {
+      console.log(data);
+    }, function(error) {
+      console.log(error);
+    })
+  }
+}
+
+dc2DashboardControllers.controller('IPAMIpNetworkDetailController', ['$scope', '$location', '$localStorage', '$routeParams', 'toaster', 'IPNetworkFactory', 'IPNetworkInfoFactory', IPAMIpNetworkDetailController]);
+
+function IPAMIpNetworkController($scope, $location, $localStorage, toaster, IPNetworkFactory) {
   var self = this;
   $scope.$storage = $localStorage;
   if (! $scope.$storage.authenticated) {
     $location.path('/login');
   }
+  this.foo = {};
+
+  this.foo.regExp = /^[0-9]{1,2}$/;
   this.ipnetworks = null;
   this.add_new = false;
+  this.new_ipnetwork = {}
   this.doList = function() {
     // list all ipnetworks
     console.log('in IPAMIpNetworkController.doList()')
     IPNetworkFactory.query(function(data) {
       console.log('in IPAMIpNetworkController.doList()');
+      console.log(data);
       self.ipnetworks = data;
     }, function(error) {
       console.log('in IPAMIpNetworkController.doList() error');
@@ -309,6 +354,7 @@ function IPAMIpNetworkController($scope, $location, $localStorage, IPNetworkFact
   this.doAdd = function() {
     console.log('in doAdd');
     self.add_new = true;
+    self.new_ipnetwork = {};
   }
   this.doSave = function(ipnetwork) {
     console.log(ipnetwork);
@@ -318,12 +364,14 @@ function IPAMIpNetworkController($scope, $location, $localStorage, IPNetworkFact
       self.doList();
     }, function(error) {
       console.log('IPAMIpNetworkController.doSave() unsuccessfull');
+      console.log(error);
+
     })
   }
   this.doList();
 }
 
-dc2DashboardControllers.controller('IPAMIpNetworkController', ['$scope', '$location', '$localStorage', 'IPNetworkFactory', IPAMIpNetworkController]);
+dc2DashboardControllers.controller('IPAMIpNetworkController', ['$scope', '$location', '$localStorage', 'toaster', 'IPNetworkFactory', IPAMIpNetworkController]);
 
 function LoginCtrl($rootScope, $scope, $location, $localStorage, LoginFactory, UsersFactory) {
 
@@ -376,7 +424,7 @@ function LogoutCtrl($localStorage, $location) {
 
 dc2DashboardControllers.controller('LogoutCtrl', ['$localStorage', '$location', '$localStorage', LogoutCtrl]);
 
-function UserSettingsController($scope, toaster, UsersFactory, GroupsFactory) {
+function UserSettingsController($scope, $location, toaster, UsersFactory, GroupsFactory) {
   console.log('UserSettingsController');
   console.log($scope.newUser);
   console.log(($scope.newUser==true && $scope.is_edit==false))
@@ -429,11 +477,14 @@ function UserSettingsController($scope, toaster, UsersFactory, GroupsFactory) {
         console.log('in User Save')
         console.log(data)
         toaster.pop('success', 'User '+data.user.username+ 'created');
-        $location.path('/administration/users');
+        $scope.add_user=false;
+        $scope.edit_user=false;        
       }, function(error) {
         console.log('in user Save error');
         console.log(error);
         toaster.pop('error', 'An error occured');
+        $scope.add_user=false;
+        $scope.edit_user=false;        
       })
     }
   }
@@ -449,7 +500,7 @@ function UserSettingsController($scope, toaster, UsersFactory, GroupsFactory) {
   $scope.list();
 }
 
-dc2Directives.controller('UserSettingsController', ['$scope', 'toaster', 'UsersFactory', 'GroupsFactory', UserSettingsController])
+dc2Directives.controller('UserSettingsController', ['$scope', '$location', 'toaster', 'UsersFactory', 'GroupsFactory', UserSettingsController])
 
 function UserSetting() {
   return {

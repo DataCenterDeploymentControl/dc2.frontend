@@ -42,10 +42,10 @@
 		</div>		
 	</div>
 	<div ng-if="add_user && !edit_user">
-		<user-settings new-user="true" user="new_user" edit-enable="true"></user-settings>
+		<user-settings new-user="add_user" user="new_user" edit-enable="true"></user-settings>
 	</div>
 	<div ng-if="! add_user && edit_user">
-		<user-settings new-user="false" user="user_to_edit" edit-enable="true"></user-settings>
+		<user-settings new-user="add_user" user="user_to_edit" edit-enable="true"></user-settings>
 	</div>
 	<div class="row">
 		<div class="col-lg-12">

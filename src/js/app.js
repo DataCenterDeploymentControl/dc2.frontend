@@ -6,6 +6,7 @@ var DC2Frontend = angular.module('DC2Frontend', [
   'ui.bootstrap',
   'toaster',
   'ngStorage',
+  'rt.encodeuri',
   'dc2DashboardControllers',
   'dc2Factories',
   'dc2Directives'
@@ -34,6 +35,11 @@ DC2Frontend.config(['$routeProvider',
         templateUrl: 'partials/administration/index.html',
         controller: 'AdministrationController'
       }).
+      when('/ipam/ipnetworks/details', {
+        templateUrl: 'partials/ipam/ipnetworks/ipnetwork_details.html',
+        controller: 'IPAMIpNetworkDetailController',
+        controllerAs: 'IPNetworkDetailCtrl'
+      }).      
       when('/ipam/ipnetworks', {
         templateUrl: 'partials/ipam/ipnetworks/index.html',
         controller: 'IPAMIpNetworkController',
