@@ -137,10 +137,22 @@ function IPNetworkInfoFactory($resource) {
       isArray:false,
       data:{ipnetwork:"@ipnetwork"}
     } 
-  })
+  });
 }
 
 dc2Factories.factory('IPNetworkInfoFactory', ['$resource', IPNetworkInfoFactory]);
+
+function IPNetworkUsedIPsFactory($resource) {
+  return $resource("http://localhost:5000/api/ipam/v1/ipnetworks/used", {ipnetwork:null}, {
+    get: {
+      method: 'GET',
+      isArray: true,
+      data:{ipnetwork:"@ipnetwork"}
+    }
+  });
+}
+
+dc2Factories.factory('IPNetworkUsedIPsFactory', ['$resource', IPNetworkUsedIPsFactory]);
 
 function GroupsFactory($resource) {
   return $resource("http://localhost:5000/api/admin/v1/groups",{}, {
@@ -307,7 +319,7 @@ function DashBoardCtrl($scope, $location, $localStorage) {
 
 dc2DashboardControllers.controller('DashBoardCtrl', ['$scope', '$location', '$localStorage', DashBoardCtrl]);
 
-function IPAMIpNetworkDetailController($scope, $location, $localStorage, $routeParams, toaster, IPNetworkFactory,IPNetworkInfoFactory) {
+function IPAMIpNetworkDetailController($scope, $location, $localStorage, $routeParams, toaster, IPNetworkFactory, IPNetworkInfoFactory, IPNetworkUsedIPsFactory) {
   var self = this;
   console.log('here');
   $scope.$storage = $localStorage;
@@ -315,18 +327,43 @@ function IPAMIpNetworkDetailController($scope, $location, $localStorage, $routeP
     $location.path('/login');
   }
   console.log($routeParams.ipnetwork);
-  this.ipnetwork = $routeParams.ipnetwork;
+  this.ipnetwork = {
+    network: $routeParams.ipnetwork
+  }
+  self.add_new_entry=false;
+
   this.getInfo = function() {
     console.log('in getInfo');
-    IPNetworkInfoFactory.get({ipnetwork: self.ipnetwork}, function(data) {
+    IPNetworkInfoFactory.get({ipnetwork: self.ipnetwork.network}, function(data) {
       console.log(data);
+      self.ipnetwork.info = data;
     }, function(error) {
       console.log(error);
     })
   }
+  this.getUsedIPs = function() {
+    console.log('in getUsedIPs');
+    IPNetworkUsedIPsFactory.get({ipnetwork: self.ipnetwork.network}, function(data) {
+      console.log(data);
+      self.ipnetwork.used = data;
+    }, function(error) {
+      console.log(error);
+    })
+  }
+  this.addNewEntry = function() {
+    console.log('in addNewEntry');
+    self.new_entry = {};
+    self.add_new_entry=true;
+  }
+  this.saveEntry = function() {
+    console.log('in saveEntry');
+    console.log(self.new_entry);
+  }
+  this.getInfo();
+  this.getUsedIPs();
 }
 
-dc2DashboardControllers.controller('IPAMIpNetworkDetailController', ['$scope', '$location', '$localStorage', '$routeParams', 'toaster', 'IPNetworkFactory', 'IPNetworkInfoFactory', IPAMIpNetworkDetailController]);
+dc2DashboardControllers.controller('IPAMIpNetworkDetailController', ['$scope', '$location', '$localStorage', '$routeParams', 'toaster', 'IPNetworkFactory', 'IPNetworkInfoFactory', 'IPNetworkUsedIPsFactory', IPAMIpNetworkDetailController]);
 
 function IPAMIpNetworkController($scope, $location, $localStorage, toaster, IPNetworkFactory) {
   var self = this;

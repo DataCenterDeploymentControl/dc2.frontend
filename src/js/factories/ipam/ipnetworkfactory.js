@@ -22,7 +22,29 @@ function IPNetworkInfoFactory($resource) {
       isArray:false,
       data:{ipnetwork:"@ipnetwork"}
     } 
-  })
+  });
 }
 
 dc2Factories.factory('IPNetworkInfoFactory', ['$resource', IPNetworkInfoFactory]);
+
+function IPNetworkUsedIPsFactory($resource) {
+  return $resource("http://localhost:5000/api/ipam/v1/ipnetworks/used", {ipnetwork:null}, {
+    get: {
+      method: 'GET',
+      isArray: true,
+      data:{ipnetwork:"@ipnetwork"}
+    }
+  });
+}
+
+dc2Factories.factory('IPNetworkUsedIPsFactory', ['$resource', IPNetworkUsedIPsFactory]);
+
+function HostEntryFactory($resource) {
+  return $resource("http://localhost:5000/api/ipam/v1/ipnetworks/hostentry", {hostentry:null}, {
+    new: {
+      method: 'POST',
+      isArray: false,
+      data:"@hostentry"
+    }
+  });
+}
