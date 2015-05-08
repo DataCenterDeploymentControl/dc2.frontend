@@ -68,15 +68,15 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr ng-repeat="ip in IPNetworkDetailCtrl.ipnetwork.used">
-                    <td>{{ip.ipaddress}}</td>
-                    <td>Hostname</td>
-                    <td><button class="btn btn-danger btn-sm pull-right"><i class="glyphicon glyphicon-remove"></td>
-                  </tr>
                   <tr ng-if="IPNetworkDetailCtrl.add_new_entry">
-                    <td><input type="text" class="form-control input-sm" ng-model="IPNetworkDetailCtrl.new_entry.ipaddress" placeholder="IP Address"/></td>
+                    <td ng-class="{'has-error':IPNetworkDetailCtrl.entry_error.ipaddress}"><input type="text" class="form-control input-sm" ng-model="IPNetworkDetailCtrl.new_entry.ipaddress" placeholder="IP Address"/></div></td>
                     <td><input type="text" class="form-control input-sm" ng-model="IPNetworkDetailCtrl.new_entry.hostname" placeholder="Hostname"/></td>
                     <td><button class="btn btn-primary pull-right btn-sm" ng-click="IPNetworkDetailCtrl.saveEntry()"><i class="glyphicon glyphicon-ok"></i></button></td>
+                  </tr>                
+                  <tr ng-repeat="ip in IPNetworkDetailCtrl.ipnetwork.used">
+                    <td>{{ip.ipaddress}}</td>
+                    <td>{{ip.hostname}}</td>
+                    <td><button class="btn btn-danger btn-sm pull-right"><i class="glyphicon glyphicon-remove"></td>
                   </tr>
                 </tbody>
               </table>

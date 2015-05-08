@@ -5,8 +5,8 @@ function IPAMIpNetworkController($scope, $location, $localStorage, toaster, IPNe
     $location.path('/login');
   }
   this.foo = {};
-
   this.foo.regExp = /^[0-9]{1,2}$/;
+  this.in_add_action = false;
   this.ipnetworks = null;
   this.add_new = false;
   this.new_ipnetwork = {}
@@ -36,7 +36,11 @@ function IPAMIpNetworkController($scope, $location, $localStorage, toaster, IPNe
       console.log('IPAMIpNetworkController.doSave() unsuccessfull');
       console.log(error);
 
-    })
+    });
+  }
+  this.doCancelSave = function() {
+    self.add_new = false;
+    self.new_ipnetwork = {}; 
   }
   this.doList();
 }

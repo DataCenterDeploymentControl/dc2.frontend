@@ -20,9 +20,9 @@
 					</tr>
 					<tr ng-if="IPNetworkCtrl.add_new">
 						<form name="myForm" novalidate class="form-horizontal">
-							<td><input type="text" class="form-control" name="myIpnetwork" ng-model="IPNetworkCtrl.new_ipnetwork.ipnetwork" placeholder="IPNetwork in CIDR Notation"/></td>
-							<td><input type="text" class="form-control" ng-model="IPNetworkCtrl.new_ipnetwork.description" placeholder="Description"/></td>
-							<td><button ng-click="IPNetworkCtrl.doSave(IPNetworkCtrl.new_ipnetwork)" class="btn btn btn-primary btn-sm pull-right" value=""><i class="glyphicon glyphicon-ok"></i></button></td>
+							<td><input type="text" class="form-control input-sm" name="myIpnetwork" ng-model="IPNetworkCtrl.new_ipnetwork.ipnetwork" placeholder="IPNetwork in CIDR Notation"/></td>
+							<td><input type="text" class="form-control input-sm" ng-model="IPNetworkCtrl.new_ipnetwork.description" placeholder="Description"/></td>
+							<td><button ng-click="IPNetworkCtrl.doSave(IPNetworkCtrl.new_ipnetwork)" class="btn btn-primary btn-xs pull-right" value=""><i class="glyphicon glyphicon-ok"></i></button>&nbsp;<button ng-click="IPNetworkCtrl.doCancelSave()" class="btn btn-xs btn-danger pull-right"><i class="glyphicon glyphicon-remove"></i></button></td>
 					</tr>
 					</form>
 				</tbody>
@@ -31,7 +31,7 @@
 	</div>
 	<div class="row">
 		<div class="col-lg-12">
-			<button ng-click="IPNetworkCtrl.doAdd()" class="btn btn-primary pull-right">Add IPNetwork</button>
+			<button ng-click="IPNetworkCtrl.doAdd()" ng-disabled="IPNetworkCtrl.in_add_action" class="btn btn-primary pull-right">Add IPNetwork</button>
 		</div>
 	</div>
 </div>
