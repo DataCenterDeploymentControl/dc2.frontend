@@ -11,7 +11,8 @@
     "grunt-cli": "*",
     "grunt-wiredep": "*",
     "grunt-contrib-concat": "*",
-    "grunt-contrib-copy": "*"
+    "grunt-contrib-copy": "*",
+    "grunt-contrib-connect": "*"
   },
   "scripts": {
   }

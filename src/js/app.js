@@ -9,7 +9,8 @@ var DC2Frontend = angular.module('DC2Frontend', [
   'rt.encodeuri',
   'dc2DashboardControllers',
   'dc2Factories',
-  'dc2Directives'
+  'dc2Directives',
+  'dc2Services'
 ]);
 
 DC2Frontend.config(['$routeProvider',
@@ -25,29 +26,56 @@ DC2Frontend.config(['$routeProvider',
       }).
       when('/user/:action', {
         templateUrl: 'partials/user/index.html',
-        controller: 'AdminUserController'
+        controller: 'AdminUserController',
+        resolve: {
+          AuthCheckService: AuthCheckService
+        }
       }).
       when('/administration/users', {
         templateUrl: 'partials/administration/users.html',
-        controller: 'AdministrationUsersController'
-      }).      
+        controller: 'AdministrationUsersController',
+        resolve: {
+          AuthCheckService: AuthCheckService
+        }
+      }).
+      when('/administration/xen', {
+        templateUrl: 'partials/administration/xen.html',
+        controller: 'AdministrationXenController',
+        controllerAs:'CtrlAdminXen',
+        resolve: {
+          AuthCheckService: AuthCheckService
+        }
+      }).
       when('/administration', {
         templateUrl: 'partials/administration/index.html',
-        controller: 'AdministrationController'
+        controller: 'AdministrationController',
+        resolve: {
+          AuthCheckService: AuthCheckService
+        }
+
       }).
       when('/ipam/ipnetworks/details', {
         templateUrl: 'partials/ipam/ipnetworks/ipnetwork_details.html',
         controller: 'IPAMIpNetworkDetailController',
-        controllerAs: 'IPNetworkDetailCtrl'
-      }).      
+        controllerAs: 'IPNetworkDetailCtrl',
+        resolve: {
+          AuthCheckService: AuthCheckService
+        }
+      }).
       when('/ipam/ipnetworks', {
         templateUrl: 'partials/ipam/ipnetworks/index.html',
         controller: 'IPAMIpNetworkController',
-        controllerAs: 'IPNetworkCtrl'
+        controllerAs: 'IPNetworkCtrl',
+        resolve: {
+          AuthCheckService: AuthCheckService
+        }
       }).
       otherwise({
         templateUrl: 'partials/main/index.html',
-        controller: 'DashBoardCtrl'
+        controller: 'DashBoardCtrl',
+        resolve: {
+          AuthCheckService: AuthCheckService
+        }
       });
   }
 ]);

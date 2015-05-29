@@ -3,7 +3,7 @@ function dc2ResourceInterceptor($localStorage, $q, $location) {
     request: function(config) {
       if ('auth_token' in $localStorage && 'auth_user' in $localStorage) {
         if ($localStorage.auth_token != null) {
-          config.headers['X-DC2-Auth-Token']=$localStorage.auth_token;  
+          config.headers['X-DC2-Auth-Token']=$localStorage.auth_token;
         }
         if ($localStorage.auth_user != null) {
           config.headers['X-DC2-Auth-User']=$localStorage.auth_user;
@@ -20,6 +20,7 @@ function dc2ResourceInterceptor($localStorage, $q, $location) {
       console.log(rejection);
       if (rejection.status == 401) { // Unauthorized
         $location.path('/login');
+        return $q.reject(rejection);
       } else {
         return $q.reject(rejection);
       }

@@ -9,7 +9,8 @@ var DC2Frontend = angular.module('DC2Frontend', [
   'rt.encodeuri',
   'dc2DashboardControllers',
   'dc2Factories',
-  'dc2Directives'
+  'dc2Directives',
+  'dc2Services'
 ]);
 
 DC2Frontend.config(['$routeProvider',
@@ -25,29 +26,56 @@ DC2Frontend.config(['$routeProvider',
       }).
       when('/user/:action', {
         templateUrl: 'partials/user/index.html',
-        controller: 'AdminUserController'
+        controller: 'AdminUserController',
+        resolve: {
+          AuthCheckService: AuthCheckService
+        }
       }).
       when('/administration/users', {
         templateUrl: 'partials/administration/users.html',
-        controller: 'AdministrationUsersController'
-      }).      
+        controller: 'AdministrationUsersController',
+        resolve: {
+          AuthCheckService: AuthCheckService
+        }
+      }).
+      when('/administration/xen', {
+        templateUrl: 'partials/administration/xen.html',
+        controller: 'AdministrationXenController',
+        controllerAs:'CtrlAdminXen',
+        resolve: {
+          AuthCheckService: AuthCheckService
+        }
+      }).
       when('/administration', {
         templateUrl: 'partials/administration/index.html',
-        controller: 'AdministrationController'
+        controller: 'AdministrationController',
+        resolve: {
+          AuthCheckService: AuthCheckService
+        }
+
       }).
       when('/ipam/ipnetworks/details', {
         templateUrl: 'partials/ipam/ipnetworks/ipnetwork_details.html',
         controller: 'IPAMIpNetworkDetailController',
-        controllerAs: 'IPNetworkDetailCtrl'
-      }).      
+        controllerAs: 'IPNetworkDetailCtrl',
+        resolve: {
+          AuthCheckService: AuthCheckService
+        }
+      }).
       when('/ipam/ipnetworks', {
         templateUrl: 'partials/ipam/ipnetworks/index.html',
         controller: 'IPAMIpNetworkController',
-        controllerAs: 'IPNetworkCtrl'
+        controllerAs: 'IPNetworkCtrl',
+        resolve: {
+          AuthCheckService: AuthCheckService
+        }
       }).
       otherwise({
         templateUrl: 'partials/main/index.html',
-        controller: 'DashBoardCtrl'
+        controller: 'DashBoardCtrl',
+        resolve: {
+          AuthCheckService: AuthCheckService
+        }
       });
   }
 ]);
@@ -55,6 +83,7 @@ DC2Frontend.config(['$routeProvider',
 DC2Frontend.config(['$httpProvider', function($httpProvider) {
   $httpProvider.interceptors.push('dc2ResourceInterceptor');
 }])
+
 'use strict';
 
 
@@ -75,19 +104,31 @@ var dc2Factories = angular.module('dc2Factories', []);
 var dc2Directives = angular.module('dc2Directives', []);
 
 
+'use strict';
+
+var dc2Services = angular.module('dc2Services', []);
+
 function LoginFactory($resource) {
   return $resource("http://localhost:5000/api/auth/v1/login", {}, {
     post: {method: "POST"}
   });
 }
 
+function AuthFactory($resource) {
+  return $resource("http://localhost:5000/api/auth/v1/authcheck", {}, {
+    check: {method: "GET"}
+  });
+}
+
 dc2Factories.factory('LoginFactory', ['$resource', LoginFactory]);
+dc2Factories.factory('AuthFactory', ['$resource', AuthFactory]);
+
 function dc2ResourceInterceptor($localStorage, $q, $location) {
   return {
     request: function(config) {
       if ('auth_token' in $localStorage && 'auth_user' in $localStorage) {
         if ($localStorage.auth_token != null) {
-          config.headers['X-DC2-Auth-Token']=$localStorage.auth_token;  
+          config.headers['X-DC2-Auth-Token']=$localStorage.auth_token;
         }
         if ($localStorage.auth_user != null) {
           config.headers['X-DC2-Auth-User']=$localStorage.auth_user;
@@ -104,6 +145,7 @@ function dc2ResourceInterceptor($localStorage, $q, $location) {
       console.log(rejection);
       if (rejection.status == 401) { // Unauthorized
         $location.path('/login');
+        return $q.reject(rejection);
       } else {
         return $q.reject(rejection);
       }
@@ -320,15 +362,14 @@ function AdminUserController($scope, $localStorage, $location, $routeParams) {
 
 dc2DashboardControllers.controller('AdminUserController', ['$scope', '$localStorage', '$location', '$routeParams', AdminUserController]);
 
-function DashBoardCtrl($scope, $location, $localStorage) {
+function DashBoardCtrl($scope, $location, $localStorage, AuthFactory) {
   $scope.$storage = $localStorage;
   if (! $scope.$storage.authenticated) {
     $location.path('/login');
   }
-  
 }
 
-dc2DashboardControllers.controller('DashBoardCtrl', ['$scope', '$location', '$localStorage', DashBoardCtrl]);
+dc2DashboardControllers.controller('DashBoardCtrl', ['$scope', '$location', '$localStorage', 'AuthFactory', DashBoardCtrl]);
 
 function IPAMIpNetworkDetailController($scope, $location, $localStorage, $routeParams, toaster, IPNetworkFactory, IPNetworkInfoFactory, IPNetworkUsedIPsFactory, HostEntryFactory) {
   var self = this;
@@ -402,8 +443,8 @@ function IPAMIpNetworkController($scope, $location, $localStorage, toaster, IPNe
     $location.path('/login');
   }
   this.foo = {};
-
   this.foo.regExp = /^[0-9]{1,2}$/;
+  this.in_add_action = false;
   this.ipnetworks = null;
   this.add_new = false;
   this.new_ipnetwork = {}
@@ -623,3 +664,9 @@ function DirectiveNavbar() {
 }
 
 dc2Directives.directive('navbar', [DirectiveNavbar])
+function AuthCheckService(AuthFactory) {
+  console.log('In AuthCheckService');
+  return AuthFactory.get().$promise;
+}
+
+dc2Services.service('AuthCheckService', ['AuthFactory', AuthCheckService]);

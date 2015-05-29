@@ -12,6 +12,9 @@ function AdministrationController($scope, $localStorage, $location, $routeParams
   $scope.doAdminGroups = function() {
     $location.path('/administration/groups');
   }
+  $scope.doAdminXen = function() {
+    $location.path('/administration/xen');
+  }
 }
 
 dc2DashboardControllers.controller('AdministrationController', ['$scope', '$localStorage', '$location', '$routeParams', AdministrationController]);
