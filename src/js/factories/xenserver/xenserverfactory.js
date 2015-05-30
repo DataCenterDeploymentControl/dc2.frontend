@@ -1,40 +1,32 @@
 function XenServerFactory($resource) {
-  return $resource("http://localhost:5000/api/xen/v1/servers", {}, {
+  return $resource("http://localhost:5000/api/xen/v1/admin/servers", {}, {
     query: {
       method:'GET',
       isArray:true
+    },
+    new: {
+      method:'POST',
+      data:'@server',
+      isArray: false
+    },
+    get: {
+      method:'GET',
+      url:"http://localhost:5000/api/xen/v1/admin/servers/:id",
+      params:{id:'@id'},
+      isArray:false
+    },
+    delete: {
+      method: 'DELETE',
+      url: "http://localhost:5000/api/xen/v1/admin/servers/:id",
+      params: {id:'@id'},
+      isArray: false
+    },
+    update: {
+      method: 'PUT',
+      url: "http://localhost:5000/api/xen/v1/admin/servers/:id",
+      params: {id:'@id'},
+      isArray: false
     }
-    // update: {
-    //   method:'put',
-    //   params:{username:'@username'},
-    //   data:'@user',
-    //   isArray:false
-    // },
-    // get: {
-    //   method:'get',
-    //   params:{username:'@username'},
-    //   isArray:false
-    // },
-    // new: {
-    //   method:'post',
-    //   data:'@user',
-    //   isArray:false
-    // },
-    // remove: {
-    //   method:'delete',
-    //   params:{username: '@username'},
-    //   isArray:false
-    // },
-    // enable: {
-    //   method:'get',
-    //   params:{username: '@username', state:'enable'},
-    //   isArray:false
-    // },
-    // disable: {
-    //   method:'get',
-    //   params:{username: '@username', state:'disable'},
-    //   isArray:false
-    // }
   });
 }
 

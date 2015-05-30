@@ -10,7 +10,8 @@ var DC2Frontend = angular.module('DC2Frontend', [
   'dc2DashboardControllers',
   'dc2Factories',
   'dc2Directives',
-  'dc2Services'
+  'dc2Services',
+  'dc2Filters'
 ]);
 
 DC2Frontend.config(['$routeProvider',
@@ -70,6 +71,14 @@ DC2Frontend.config(['$routeProvider',
           AuthCheckService: AuthCheckService
         }
       }).
+      when('/xen/dashboard', {
+        templateUrl: 'partials/xen/dashboard.html',
+        controller: 'XenDashboardController',
+        controllerAs: 'CtrlXenDashboard',
+        resolve: {
+          AuthCheckService: AuthCheckService
+        }
+      }).
       otherwise({
         templateUrl: 'partials/main/index.html',
         controller: 'DashBoardCtrl',
@@ -84,6 +93,12 @@ DC2Frontend.config(['$httpProvider', function($httpProvider) {
   $httpProvider.interceptors.push('dc2ResourceInterceptor');
 }])
 
+// DC2Frontend.run(['$rootScope', '$location', function($rootScope, $location) {
+//   $rootScope.$on('loginRequired', function() {
+//     $location.path('/login');
+//   });
+// }]);
+
 DC2Frontend.constant('SideBarMenus', {
   'menus': [
     {
@@ -92,15 +107,18 @@ DC2Frontend.constant('SideBarMenus', {
       'items': [
         {
           'title': 'Users',
-          'link': '/administration/users'
+          'link': '/administration/users',
+          'id': 'admin_users'
         },
         {
           'title': 'Groups',
-          'link': '/administration/groups'
+          'link': '/administration/groups',
+          'id': 'admin_groups'
         },
         {
           'title': 'XenServers',
-          'link': '/administration/xenservers'
+          'link': '/administration/xen',
+          'id': 'admin_xenservers'
         }
       ]
     },
@@ -115,6 +133,16 @@ DC2Frontend.constant('SideBarMenus', {
         {
           'title': 'Domains',
           'link': '/ipam/domains'
+        }
+      ]
+    },
+    {
+      'heading': 'Xen Infrastructure',
+      'needs_group': 'users',
+      'items': [
+        {
+          'title': 'Xen Dashboard',
+          'link': '/xen/dashboard'
         }
       ]
     }
@@ -145,6 +173,10 @@ var dc2Directives = angular.module('dc2Directives', []);
 
 var dc2Services = angular.module('dc2Services', []);
 
+'use strict';
+
+var dc2Filters = angular.module('dc2Filters', []);
+
 function LoginFactory($resource) {
   return $resource("http://localhost:5000/api/auth/v1/login", {}, {
     post: {method: "POST"}
@@ -160,9 +192,10 @@ function AuthFactory($resource) {
 dc2Factories.factory('LoginFactory', ['$resource', LoginFactory]);
 dc2Factories.factory('AuthFactory', ['$resource', AuthFactory]);
 
-function dc2ResourceInterceptor($localStorage, $q, $location) {
+function dc2ResourceInterceptor($rootScope, $q, $localStorage) {
   return {
     request: function(config) {
+      console.log('in request');
       if ('auth_token' in $localStorage && 'auth_user' in $localStorage) {
         if ($localStorage.auth_token != null) {
           config.headers['X-DC2-Auth-Token']=$localStorage.auth_token;
@@ -171,26 +204,26 @@ function dc2ResourceInterceptor($localStorage, $q, $location) {
           config.headers['X-DC2-Auth-User']=$localStorage.auth_user;
         }
       }
-      console.log(config);
       return config;
     },
+    requestError: function(rejection) {
+      console.log('in RequestError');
+      return $q.reject(rejection);
+    },
     response: function(config) {
+      console.log('in response');
       return config;
     },
     responseError: function(rejection) {
-      console.log('in responseError')
-      console.log(rejection);
-      if (rejection.status == 401) { // Unauthorized
-        $location.path('/login');
-        return $q.reject(rejection);
-      } else {
-        return $q.reject(rejection);
-      }
+      // if (rejection.status == 401) { // Unauthorized
+      //   $rootScope.$emit('loginRequired');
+      // }
+      return $q.reject(rejection);
     }
   }
 }
 
-dc2Factories.factory('dc2ResourceInterceptor', ['$localStorage', '$q', '$location', dc2ResourceInterceptor]);
+dc2Factories.factory('dc2ResourceInterceptor', ['$rootScope', '$q', '$localStorage', dc2ResourceInterceptor]);
 
 function IPNetworkFactory($resource) {
   return $resource("http://localhost:5000/api/ipam/v1/ipnetworks", {}, {
@@ -297,75 +330,91 @@ function UsersFactory($resource, dc2ResourceInterceptor) {
 
 dc2Factories.factory('UsersFactory', ['$resource', 'dc2ResourceInterceptor', UsersFactory]);
 
-function XenServerFactory($resource) {
+function XenFactory($resource) {
   return $resource("http://localhost:5000/api/xen/v1/servers", {}, {
     query: {
       method:'GET',
       isArray:true
+    },
+    get: {
+      method: 'GET',
+      url: "http://localhost:5000/api/xen/v1/servers/:id",
+      params:{id:'@id'},
+      isArray: false
     }
-    // update: {
-    //   method:'put',
-    //   params:{username:'@username'},
-    //   data:'@user',
-    //   isArray:false
+    // new: {
+    //   method:'POST',
+    //   data:'@server',
+    //   isArray: false
     // },
     // get: {
-    //   method:'get',
-    //   params:{username:'@username'},
+    //   method:'GET',
+    //   url:"http://localhost:5000/api/xen/v1/admin/servers/:id",
+    //   params:{id:'@id'},
     //   isArray:false
     // },
-    // new: {
-    //   method:'post',
-    //   data:'@user',
-    //   isArray:false
+    // delete: {
+    //   method: 'DELETE',
+    //   url: "http://localhost:5000/api/xen/v1/admin/servers/:id",
+    //   params: {id:'@id'},
+    //   isArray: false
     // },
-    // remove: {
-    //   method:'delete',
-    //   params:{username: '@username'},
-    //   isArray:false
-    // },
-    // enable: {
-    //   method:'get',
-    //   params:{username: '@username', state:'enable'},
-    //   isArray:false
-    // },
-    // disable: {
-    //   method:'get',
-    //   params:{username: '@username', state:'disable'},
-    //   isArray:false
+    // update: {
+    //   method: 'PUT',
+    //   url: "http://localhost:5000/api/xen/v1/admin/servers/:id",
+    //   params: {id:'@id'},
+    //   isArray: false
     // }
+  });
+}
+
+dc2Factories.factory('XenFactory', ['$resource', XenFactory]);
+
+function XenServerFactory($resource) {
+  return $resource("http://localhost:5000/api/xen/v1/admin/servers", {}, {
+    query: {
+      method:'GET',
+      isArray:true
+    },
+    new: {
+      method:'POST',
+      data:'@server',
+      isArray: false
+    },
+    get: {
+      method:'GET',
+      url:"http://localhost:5000/api/xen/v1/admin/servers/:id",
+      params:{id:'@id'},
+      isArray:false
+    },
+    delete: {
+      method: 'DELETE',
+      url: "http://localhost:5000/api/xen/v1/admin/servers/:id",
+      params: {id:'@id'},
+      isArray: false
+    },
+    update: {
+      method: 'PUT',
+      url: "http://localhost:5000/api/xen/v1/admin/servers/:id",
+      params: {id:'@id'},
+      isArray: false
+    }
   });
 }
 
 dc2Factories.factory('XenServerFactory', ['$resource', XenServerFactory]);
 
-function AdministrationController($scope, $localStorage, $location, $routeParams) {
+function AdministrationController($scope, $localStorage) {
   $scope.$storage = $localStorage;
-  if (! $scope.$storage.authenticated) {
-    $location.path('/login');
-  }
-  if ('action' in $routeParams) {
-    console.log($routeParams.action)
-  }
-  $scope.doAdminUsers = function() {
-    $location.path('/administration/users');
-  }
-  $scope.doAdminGroups = function() {
-    $location.path('/administration/groups');
-  }
-  $scope.doAdminXen = function() {
-    $location.path('/administration/xen');
-  }
 }
 
-dc2DashboardControllers.controller('AdministrationController', ['$scope', '$localStorage', '$location', '$routeParams', AdministrationController]);
+dc2DashboardControllers.controller('AdministrationController', ['$scope', '$localStorage', AdministrationController]);
 
-function AdministrationUsersController($scope, $localStorage, $location, toaster, UsersFactory) {
+function AdministrationUsersController($scope, $localStorage, $location, $route, toaster, UsersFactory) {
   console.log('in AdministrationUsersController');
   $scope.$storage = $localStorage;
-  if (! $scope.$storage.authenticated) {
-    $location.path('/login');
-  }
+  $scope.breadcrumb = 'Home'+$location.path();
+
   $scope.add_user = false;
   $scope.edit_user = false;
   $scope.users = null;
@@ -426,20 +475,98 @@ function AdministrationUsersController($scope, $localStorage, $location, toaster
   $scope.doList();
 }
 
-dc2DashboardControllers.controller('AdministrationUsersController', ['$scope', '$localStorage', '$location', 'toaster', 'UsersFactory', AdministrationUsersController]);
+dc2DashboardControllers.controller(
+  'AdministrationUsersController',
+  ['$scope', '$localStorage', '$location', '$route', 'toaster', 'UsersFactory', AdministrationUsersController]);
 
 function AdministrationXenController($scope, $localStorage, $location, toaster, XenServerFactory) {
   $scope.$storage = $localStorage;
 
   var self = this;
+  self.breadcrumb = 'Home'+$location.path();
+  self.view_status = {
+    'add': false,
+    'edit': false,
+    'list': true
+  };
 
   self.queryList = function() {
     XenServerFactory.query(function(data) {
       console.log('AdministrationXenController factory query');
       console.log(data);
+      self.xenserver_list = data;
     }, function(error) {
       console.log('AdministrationXenController factory error');
       console.log(error);
+      toaster.pop('error', 'Something went wrong');
+    });
+  }
+
+  self.doAdd = function() {
+    self.view_status.add = true;
+    self.view_status.edit = false;
+    self.view_status.list = false;
+    self.xenserver = {};
+  }
+  self.doSave = function(entry) {
+    console.log('in self.doSave');
+    console.log(entry);
+    if (entry.title == '') {
+      entry.title=null;
+    }
+    if (self.view_status.add) {
+      XenServerFactory.new(entry, function(data) {
+        console.log('successfully saved');
+        self.view_status.add = false;
+        self.view_status.edit = false;
+        self.view_status.list = true;
+        self.queryList();
+      }, function(error) {
+        console.log('something went wrong');
+        console.log(error);
+        toaster.pop('error', error.data.message);
+        self.view_status.add = false;
+        self.view_status.edit = false;
+        self.view_status.list = true;
+        self.queryList();
+      })
+    }
+    if (self.view_status.edit) {
+      XenServerFactory.update(entry, function(data) {
+        console.log('success updated');
+        console.log(data);
+        self.view_status.add = false;
+        self.view_status.edit = false;
+        self.view_status.list = true;
+        toaster.pop('success', 'Entry Successfully Updated');
+        self.queryList();
+      });
+    }
+  }
+  self.doCancel = function() {
+    self.view_status.add = false;
+    self.view_status.edit = false;
+    self.view_status.list = true;
+    self.queryList();
+  }
+  self.doEdit = function(entry) {
+    XenServerFactory.get({id:entry.id}, function(data) {
+      self.xenserver=data;
+      self.view_status.add = false;
+      self.view_status.edit = true;
+      self.view_status.list = false;
+    }, function(error) {
+      toaster.pop('error', error.data.message);
+    });
+  }
+  self.doDelete = function(entry) {
+    XenServerFactory.delete({id: entry.id}, function(data) {
+      console.log('delete successful');
+      console.log(data);
+      toaster.pop('success', data.message);
+      self.queryList();
+    }, function(error) {
+      toaster.pop('error', error.data.message);
     });
   }
   self.queryList();
@@ -472,9 +599,6 @@ dc2DashboardControllers.controller('AdminUserController', ['$scope', '$localStor
 
 function DashBoardCtrl($scope, $location, $localStorage, AuthFactory) {
   $scope.$storage = $localStorage;
-  // if (! $scope.$storage.authenticated) {
-  //   $location.path('/login');
-  // }
 }
 
 dc2DashboardControllers.controller('DashBoardCtrl', ['$scope', '$location', '$localStorage', 'AuthFactory', DashBoardCtrl]);
@@ -644,6 +768,125 @@ function LogoutCtrl($localStorage, $location) {
 
 dc2DashboardControllers.controller('LogoutCtrl', ['$localStorage', '$location', '$localStorage', LogoutCtrl]);
 
+function XenDashboardController($scope, $localStorage, toaster, XenFactory) {
+  $scope.$storage = $localStorage;
+
+  var self = this;
+  self.loading_inventory = false;
+  self.xenlist = null;
+  self.xenlist_data = {};
+  self.inventory_count = 1;
+  self.chart = null;
+  self.chart_memory_free_dps = [];
+  self.chart_memory_used_dps = [];
+  self.show_detail = false;
+  self.doInventory = function() {
+    console.log('doInventory');
+    self.loading_inventory = true;
+    if (self.xenlist.length != 0) {
+      self.xenlist.forEach(function(element, index) {
+        XenFactory.get({id:element.id}, function(data) {
+          toaster.pop('success', 'Loaded Data for '+element.title);
+          self.xenlist_data[element.hostname] = data.xenhost;
+          self.updateChart(element.hostname);
+        }, function(error) {
+          toaster.pop('error', 'an error occured');
+        });
+      }, self);
+    }
+  }
+  self.doShowDetail = function(xenhostname) {
+    console.log('doShowDetail');
+    console.log(xenhostname);
+    self.show_detail = true;
+    self.xenhost_selected = self.xenlist_data[xenhostname];
+  }
+  self.doHideDetail = function() {
+    self.show_detail = false;
+    self.xenhost_selected = null;
+  }
+  self.doChartRefresh = function() {
+    self.chart_memory_free_dps.splice(0, self.chart_memory_free_dps.length);
+    self.chart_memory_used_dps.splice(0, self.chart_memory_used_dps.length);
+    self.xenlist_data = {};
+    self.chart.render();
+    self.doInventory();
+  }
+  self.updateChart = function(xenhostname) {
+    self.chart_memory_used_dps.push({
+      y: parseInt(self.xenlist_data[xenhostname].host[0].xen_memory_used),
+      label: self.xenlist_data[xenhostname].host[0].xen_hostname
+    });
+    self.chart_memory_free_dps.push({
+      y: parseInt(self.xenlist_data[xenhostname].host[0].xen_memory_free),
+      label: self.xenlist_data[xenhostname].host[0].xen_hostname
+    });
+    self.chart.render();
+  }
+  self.doList = function() {
+    XenFactory.query({}, function(data) {
+      self.xenlist = data;
+      self.no_of_xenservers = self.xenlist.length;
+      self.doInventory();
+    }, function(error) {
+      toaster.pop('error', 'An Error Occured');
+    });
+  }
+  self.doCharting = function() {
+    console.log('doCharting');
+    var dps = []
+
+    self.chart = new CanvasJS.Chart('chartContainer', {
+      theme: 'theme1',
+      title: {
+        text: 'XenServer Memory Chart'
+      },
+      axisY: {
+          title: 'Memory (GiB)',
+          labelFontSize: 16
+      },
+      axisX: {
+        labelFontSize: 12,
+      },
+      data: [
+        {
+          type: "stackedColumn",
+          legendText: 'Memeory Used (GiB)',
+          showInLegend: true,
+          dataPoints: self.chart_memory_used_dps,
+          color: 'red'
+        },
+        {
+          type: "stackedColumn",
+          legendText: "Memory Free (GiB)",
+          showInLegend: true,
+          dataPoints: self.chart_memory_free_dps,
+          color: 'green'
+        }
+      ],
+      legend: {
+        cursor: "pointer",
+        itemclick: function (e) {
+              if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+                  e.dataSeries.visible = false;
+              } else {
+                  e.dataSeries.visible = true;
+              }
+              e.chart.render();
+          }
+      }
+    });
+    self.chart.render();
+
+  }
+  self.doList();
+  self.doCharting();
+}
+
+dc2DashboardControllers.controller(
+  'XenDashboardController',
+  ['$scope', '$localStorage', 'toaster', 'XenFactory', XenDashboardController]);
+
 function UserSettingsController($scope, $location, toaster, UsersFactory, GroupsFactory) {
   console.log('UserSettingsController');
   console.log($scope.newUser);
@@ -654,7 +897,7 @@ function UserSettingsController($scope, $location, toaster, UsersFactory, Groups
       'name': null,
       'email': null,
       'password': null
-    }; 
+    };
     $scope.is_edit=true;
   } else {
     $scope.new_user = {};
@@ -685,7 +928,7 @@ function UserSettingsController($scope, $location, toaster, UsersFactory, Groups
     $scope.is_edit = true;
   }
   $scope.doSave = function() {
-    $scope.is_edit = false; 
+    $scope.is_edit = false;
     if (! $scope.newUser) {
       UsersFactory.update({username: $scope.new_user.username}, $scope.new_user, function(data) {
         angular.copy($scope.new_user, $scope.user);
@@ -698,19 +941,20 @@ function UserSettingsController($scope, $location, toaster, UsersFactory, Groups
         console.log(data)
         toaster.pop('success', 'User '+data.user.username+ 'created');
         $scope.add_user=false;
-        $scope.edit_user=false;        
+        $scope.edit_user=false;
       }, function(error) {
         console.log('in user Save error');
         console.log(error);
         toaster.pop('error', 'An error occured');
         $scope.add_user=false;
-        $scope.edit_user=false;        
+        $scope.edit_user=false;
       })
     }
   }
   $scope.doReset = function() {
     if (!$scope.newUser) {
-      $scope.is_edit=false; 
+      $scope.is_edit=false;
+      $scope.$parent.$parent.edit_user=false;
     } else {
       console.log($scope.$parent.$parent);
       $scope.$parent.$parent.add_user=false;
@@ -738,6 +982,7 @@ function UserSetting() {
 
 dc2Directives.directive('userSettings', [UserSetting])
 
+
 function navBarController() {
 	var self = this;
 	this.checkGroup = function(user, groupname) {
@@ -750,8 +995,10 @@ function navBarController() {
 			}
 		}
 	}
-	this.is_admin = this.checkGroup(this.user,'admin');
-	this.is_user = this.checkGroup(this.user,'user');
+	if (this.authenticaed) {
+		this.is_admin = this.checkGroup(this.user,'admin');
+		this.is_user = this.checkGroup(this.user,'user');
+	}
 }
 
 dc2Directives.controller('navBarController', [navBarController]);
@@ -772,6 +1019,7 @@ function DirectiveNavbar() {
 }
 
 dc2Directives.directive('navbar', [DirectiveNavbar])
+
 
 function sideBarController(SideBarMenus) {
 	var self = this;
@@ -822,9 +1070,30 @@ function DirectiveSideBarNav() {
 
 dc2Directives.directive('sidebar', [DirectiveSideBarNav]);
 
-function AuthCheckService(AuthFactory) {
+function AuthCheckService($q, $location, AuthFactory) {
   console.log('In AuthCheckService');
-  return AuthFactory.get().$promise;
+  var defered = $q.defer();
+  AuthFactory.check(function(data) {
+    console.log('success');
+    console.log(data);
+    defered.resolve(true);
+  }, function(error) {
+    console.log('error');
+    console.log(error);
+    defered.reject();
+    $location.path('/login');
+  });
+  return defered.promise;
 }
 
-dc2Services.service('AuthCheckService', ['AuthFactory', AuthCheckService]);
+dc2Services.service('AuthCheckService', ['$q', '$location', 'AuthFactory', AuthCheckService]);
+
+function Capitalize() {
+  return function(input, all) {
+    if (typeof(input) === 'string') {
+      return input.charAt(0).toUpperCase() + input.substring(1).toLowerCase();
+    }
+  }
+}
+
+dc2Filters.filter('capitalize', [Capitalize]);

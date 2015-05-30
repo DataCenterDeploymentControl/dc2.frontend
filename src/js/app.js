@@ -10,7 +10,8 @@ var DC2Frontend = angular.module('DC2Frontend', [
   'dc2DashboardControllers',
   'dc2Factories',
   'dc2Directives',
-  'dc2Services'
+  'dc2Services',
+  'dc2Filters'
 ]);
 
 DC2Frontend.config(['$routeProvider',
@@ -70,6 +71,14 @@ DC2Frontend.config(['$routeProvider',
           AuthCheckService: AuthCheckService
         }
       }).
+      when('/xen/dashboard', {
+        templateUrl: 'partials/xen/dashboard.html',
+        controller: 'XenDashboardController',
+        controllerAs: 'CtrlXenDashboard',
+        resolve: {
+          AuthCheckService: AuthCheckService
+        }
+      }).
       otherwise({
         templateUrl: 'partials/main/index.html',
         controller: 'DashBoardCtrl',
@@ -83,3 +92,9 @@ DC2Frontend.config(['$routeProvider',
 DC2Frontend.config(['$httpProvider', function($httpProvider) {
   $httpProvider.interceptors.push('dc2ResourceInterceptor');
 }])
+
+// DC2Frontend.run(['$rootScope', '$location', function($rootScope, $location) {
+//   $rootScope.$on('loginRequired', function() {
+//     $location.path('/login');
+//   });
+// }]);

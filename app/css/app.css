@@ -75,3 +75,10 @@
   -ms-user-select: none;
   user-select: none;
 }
+#chartWrapper.panel-body {
+  height: 400px;
+}
+#chartWrapper.panel-body #chartContainer {
+  height: 100%;
+  width: 100%;
+}

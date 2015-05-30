@@ -1,16 +1,20 @@
 <navbar authenticated="$storage.authenticated" user="$storage.user"></navbar>
 <sidebar authenticated="$storage.authenticated" user="$storage.user"></sidebar>
 <div class="sidebar-content-wrapper">
-
 	<div class="container-fluid">
 		<div class="row">
 			<div class="col-lg-12">
-				<div class="page-header"><h1>Users</h1></div>
+				<ol class="breadcrumb">
+					<li ng-repeat="crumb in breadcrumb.split('/')">{{crumb | capitalize}}</li>
+				</ol>
 			</div>
 		</div>
 		<div ng-if="!add_user && !edit_user">
 			<div class="row">
 				<div class="col-lg-12">
+					<div class="well well-sm">
+						Number Of Registered Users: {{users.length}}
+					</div>
 					<table class="table table-condensened table-hover table-bordered">
 						<thead>
 							<tr>
@@ -38,7 +42,7 @@
 			</div>
 			<div class="row">
 				<div class="col-lg-12">
-					<div class="pull-right">
+					<div class="pull-left">
 						<button ng-click="doAddUser()" class="btn btn-sm btn-primary">Add User</button>
 					</div>
 				</div>
@@ -49,11 +53,6 @@
 		</div>
 		<div ng-if="! add_user && edit_user">
 			<user-settings new-user="add_user" user="user_to_edit" edit-enable="true"></user-settings>
-		</div>
-		<div class="row">
-			<div class="col-lg-12">
-				<a href="#/administration" class="btn btn-link pull-left"><i class="glyphicon glyphicon-chevron-left"></i> Back to Administration</a>
-			</div>
 		</div>
 	</div>
 </div>

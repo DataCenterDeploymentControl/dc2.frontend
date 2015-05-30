@@ -48,19 +48,14 @@ module.exports = function(grunt) {
           'src/js/factories/module.js',
           'src/js/directives/module.js',
           'src/js/services/module.js',
+          'src/js/filters/module.js',
           'src/js/factories/**/*.js',
           'src/js/controllers/**/*.js',
           'src/js/directives/**/*.js',
-          'src/js/services/**/*.js'
+          'src/js/services/**/*.js',
+          'src/js/filters/**/*.js'
         ],
         dest: 'app/js/app.js'
-      },
-      theme: {
-        src: [
-          'src/less/themes/slate/variables.less',
-          'src/less/themes/slate/bootswatch.less'
-        ],
-        dest: 'src/less/themes/slate/build.less'
       }
     },
     connect: {
@@ -80,5 +75,5 @@ module.exports = function(grunt) {
   })
   grunt.registerTask('prep', ['wiredep:prep']);
   grunt.registerTask('themes', ['less:theme']);
-  grunt.registerTask('build', ['concat:build', 'less:development']);
+  grunt.registerTask('build', ['concat:build', 'less:theme', 'less:development']);
 }

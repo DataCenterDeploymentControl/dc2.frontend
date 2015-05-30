@@ -6,15 +6,18 @@ DC2Frontend.constant('SideBarMenus', {
       'items': [
         {
           'title': 'Users',
-          'link': '/administration/users'
+          'link': '/administration/users',
+          'id': 'admin_users'
         },
         {
           'title': 'Groups',
-          'link': '/administration/groups'
+          'link': '/administration/groups',
+          'id': 'admin_groups'
         },
         {
           'title': 'XenServers',
-          'link': '/administration/xenservers'
+          'link': '/administration/xen',
+          'id': 'admin_xenservers'
         }
       ]
     },
@@ -29,6 +32,16 @@ DC2Frontend.constant('SideBarMenus', {
         {
           'title': 'Domains',
           'link': '/ipam/domains'
+        }
+      ]
+    },
+    {
+      'heading': 'Xen Infrastructure',
+      'needs_group': 'users',
+      'items': [
+        {
+          'title': 'Xen Dashboard',
+          'link': '/xen/dashboard'
         }
       ]
     }

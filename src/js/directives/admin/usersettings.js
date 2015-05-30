@@ -8,7 +8,7 @@ function UserSettingsController($scope, $location, toaster, UsersFactory, Groups
       'name': null,
       'email': null,
       'password': null
-    }; 
+    };
     $scope.is_edit=true;
   } else {
     $scope.new_user = {};
@@ -39,7 +39,7 @@ function UserSettingsController($scope, $location, toaster, UsersFactory, Groups
     $scope.is_edit = true;
   }
   $scope.doSave = function() {
-    $scope.is_edit = false; 
+    $scope.is_edit = false;
     if (! $scope.newUser) {
       UsersFactory.update({username: $scope.new_user.username}, $scope.new_user, function(data) {
         angular.copy($scope.new_user, $scope.user);
@@ -52,19 +52,20 @@ function UserSettingsController($scope, $location, toaster, UsersFactory, Groups
         console.log(data)
         toaster.pop('success', 'User '+data.user.username+ 'created');
         $scope.add_user=false;
-        $scope.edit_user=false;        
+        $scope.edit_user=false;
       }, function(error) {
         console.log('in user Save error');
         console.log(error);
         toaster.pop('error', 'An error occured');
         $scope.add_user=false;
-        $scope.edit_user=false;        
+        $scope.edit_user=false;
       })
     }
   }
   $scope.doReset = function() {
     if (!$scope.newUser) {
-      $scope.is_edit=false; 
+      $scope.is_edit=false;
+      $scope.$parent.$parent.edit_user=false;
     } else {
       console.log($scope.$parent.$parent);
       $scope.$parent.$parent.add_user=false;

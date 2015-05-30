@@ -1,6 +1,7 @@
-function dc2ResourceInterceptor($localStorage, $q, $location) {
+function dc2ResourceInterceptor($rootScope, $q, $localStorage) {
   return {
     request: function(config) {
+      console.log('in request');
       if ('auth_token' in $localStorage && 'auth_user' in $localStorage) {
         if ($localStorage.auth_token != null) {
           config.headers['X-DC2-Auth-Token']=$localStorage.auth_token;
@@ -9,23 +10,23 @@ function dc2ResourceInterceptor($localStorage, $q, $location) {
           config.headers['X-DC2-Auth-User']=$localStorage.auth_user;
         }
       }
-      console.log(config);
       return config;
     },
+    requestError: function(rejection) {
+      console.log('in RequestError');
+      return $q.reject(rejection);
+    },
     response: function(config) {
+      console.log('in response');
       return config;
     },
     responseError: function(rejection) {
-      console.log('in responseError')
-      console.log(rejection);
-      if (rejection.status == 401) { // Unauthorized
-        $location.path('/login');
-        return $q.reject(rejection);
-      } else {
-        return $q.reject(rejection);
-      }
+      // if (rejection.status == 401) { // Unauthorized
+      //   $rootScope.$emit('loginRequired');
+      // }
+      return $q.reject(rejection);
     }
   }
 }
 
-dc2Factories.factory('dc2ResourceInterceptor', ['$localStorage', '$q', '$location', dc2ResourceInterceptor]);
+dc2Factories.factory('dc2ResourceInterceptor', ['$rootScope', '$q', '$localStorage', dc2ResourceInterceptor]);

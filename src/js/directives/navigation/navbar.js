@@ -11,8 +11,10 @@ function navBarController() {
 			}
 		}
 	}
-	this.is_admin = this.checkGroup(this.user,'admin');
-	this.is_user = this.checkGroup(this.user,'user');
+	if (this.authenticaed) {
+		this.is_admin = this.checkGroup(this.user,'admin');
+		this.is_user = this.checkGroup(this.user,'user');
+	}
 }
 
 dc2Directives.controller('navBarController', [navBarController]);

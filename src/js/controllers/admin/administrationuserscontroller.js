@@ -1,9 +1,8 @@
-function AdministrationUsersController($scope, $localStorage, $location, toaster, UsersFactory) {
+function AdministrationUsersController($scope, $localStorage, $location, $route, toaster, UsersFactory) {
   console.log('in AdministrationUsersController');
   $scope.$storage = $localStorage;
-  if (! $scope.$storage.authenticated) {
-    $location.path('/login');
-  }
+  $scope.breadcrumb = 'Home'+$location.path();
+
   $scope.add_user = false;
   $scope.edit_user = false;
   $scope.users = null;
@@ -64,4 +63,6 @@ function AdministrationUsersController($scope, $localStorage, $location, toaster
   $scope.doList();
 }
 
-dc2DashboardControllers.controller('AdministrationUsersController', ['$scope', '$localStorage', '$location', 'toaster', 'UsersFactory', AdministrationUsersController]);
+dc2DashboardControllers.controller(
+  'AdministrationUsersController',
+  ['$scope', '$localStorage', '$location', '$route', 'toaster', 'UsersFactory', AdministrationUsersController]);

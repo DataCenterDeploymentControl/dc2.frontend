@@ -1,0 +1,94 @@
+<navbar authenticated="$storage.authenticated" user="$storage.user"></navbar>
+<sidebar authenticated="$storage.authenticated" user="$storage.user"></sidebar>
+<div class="sidebar-content-wrapper">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-3">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">Xen Informations</h3>
+          </div>
+          <div class="panel-body">
+            <div class="list-group">
+              <a href class="list-group-item" ng-click="CtrlXenDashboard.doShowDetail(xenhost.hostname)" ng-repeat="xenhost in CtrlXenDashboard.xenlist">{{xenhost.title}}</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-9" ng-show="CtrlXenDashboard.show_detail">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              Detail View: {{CtrlXenDashboard.xenhost_selected.host[0].xen_hostname}}<span ng-click="CtrlXenDashboard.doHideDetail()" class="pull-right glyphicon glyphicon-remove pointer"></span>
+            </h3>
+          </div>
+          <div class="panel-body">
+            <tabset>
+              <tab heading="Host Informations">
+                <table class="table table-bordered table-condensed">
+                  <tbody>
+                    <tr>
+                      <th>Hostname</th>
+                      <td>{{CtrlXenDashboard.xenhost_selected.host[0].xen_hostname}}</td>
+                    </tr>
+                    <tr>
+                      <th>No. of CPUs</th>
+                      <td>{{CtrlXenDashboard.xenhost_selected.host[0].xen_no_of_cpus}}</td>
+                    </tr>
+                    <tr>
+                      <th>Memory Total (GiB)</th>
+                      <td>{{CtrlXenDashboard.xenhost_selected.host[0].xen_memory_total}}</td>
+                    </tr>
+                    <tr>
+                      <th>Memory Used (GiB)</th>
+                      <td>{{CtrlXenDashboard.xenhost_selected.host[0].xen_memory_used}}</td>
+                    </tr>
+                    <tr>
+                      <th>Memory Free (GiB)</th>
+                      <td>{{CtrlXenDashboard.xenhost_selected.host[0].xen_memory_free}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </tab>
+              <tab heading="Virtual Machines">
+                <table class="table table-bordered table-condensed table-hover">
+                  <thead>
+                    <tr>
+                      <th>DomID</th>
+                      <th>VM Name</th>
+                      <th>Memory Static Max (GiB)</th>
+                      <th>Memory Dynamic Max (GiB)</th>
+                      <th>Power State</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr ng-repeat="vm in CtrlXenDashboard.xenhost_selected.vms">
+                      <td>{{vm.vm_domid}}</td>
+                      <td>{{vm.vm_name}}</td>
+                      <td>{{vm.vm_memory_static_max}}</td>
+                      <td>{{vm.vm_memory_dynamic_max}}</td>
+                      <td>{{vm.vm_power_state}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </tab>
+            </tabset>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-9" ng-hide="CtrlXenDashboard.show_detail">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              XenHost Data Charts <span class="pull-right glyphicon glyphicon-refresh pointer" ng-click="CtrlXenDashboard.doChartRefresh()"></span>
+            </h3>
+          </div>
+          <div id="chartWrapper" class="panel-body">
+            <div id="chartContainer">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
