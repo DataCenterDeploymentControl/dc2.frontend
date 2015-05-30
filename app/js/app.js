@@ -84,6 +84,43 @@ DC2Frontend.config(['$httpProvider', function($httpProvider) {
   $httpProvider.interceptors.push('dc2ResourceInterceptor');
 }])
 
+DC2Frontend.constant('SideBarMenus', {
+  'menus': [
+    {
+      'heading': 'Administration',
+      'needs_group': 'admin',
+      'items': [
+        {
+          'title': 'Users',
+          'link': '/administration/users'
+        },
+        {
+          'title': 'Groups',
+          'link': '/administration/groups'
+        },
+        {
+          'title': 'XenServers',
+          'link': '/administration/xenservers'
+        }
+      ]
+    },
+    {
+      'heading': 'IPAM',
+      'needs_group': 'users',
+      'items': [
+        {
+          'title': 'IP Networks',
+          'link': '/ipam/ipnetworks'
+        },
+        {
+          'title': 'Domains',
+          'link': '/ipam/domains'
+        }
+      ]
+    }
+  ]
+})
+
 'use strict';
 
 
@@ -260,6 +297,48 @@ function UsersFactory($resource, dc2ResourceInterceptor) {
 
 dc2Factories.factory('UsersFactory', ['$resource', 'dc2ResourceInterceptor', UsersFactory]);
 
+function XenServerFactory($resource) {
+  return $resource("http://localhost:5000/api/xen/v1/servers", {}, {
+    query: {
+      method:'GET',
+      isArray:true
+    }
+    // update: {
+    //   method:'put',
+    //   params:{username:'@username'},
+    //   data:'@user',
+    //   isArray:false
+    // },
+    // get: {
+    //   method:'get',
+    //   params:{username:'@username'},
+    //   isArray:false
+    // },
+    // new: {
+    //   method:'post',
+    //   data:'@user',
+    //   isArray:false
+    // },
+    // remove: {
+    //   method:'delete',
+    //   params:{username: '@username'},
+    //   isArray:false
+    // },
+    // enable: {
+    //   method:'get',
+    //   params:{username: '@username', state:'enable'},
+    //   isArray:false
+    // },
+    // disable: {
+    //   method:'get',
+    //   params:{username: '@username', state:'disable'},
+    //   isArray:false
+    // }
+  });
+}
+
+dc2Factories.factory('XenServerFactory', ['$resource', XenServerFactory]);
+
 function AdministrationController($scope, $localStorage, $location, $routeParams) {
   $scope.$storage = $localStorage;
   if (! $scope.$storage.authenticated) {
@@ -273,6 +352,9 @@ function AdministrationController($scope, $localStorage, $location, $routeParams
   }
   $scope.doAdminGroups = function() {
     $location.path('/administration/groups');
+  }
+  $scope.doAdminXen = function() {
+    $location.path('/administration/xen');
   }
 }
 
@@ -346,6 +428,32 @@ function AdministrationUsersController($scope, $localStorage, $location, toaster
 
 dc2DashboardControllers.controller('AdministrationUsersController', ['$scope', '$localStorage', '$location', 'toaster', 'UsersFactory', AdministrationUsersController]);
 
+function AdministrationXenController($scope, $localStorage, $location, toaster, XenServerFactory) {
+  $scope.$storage = $localStorage;
+
+  var self = this;
+
+  self.queryList = function() {
+    XenServerFactory.query(function(data) {
+      console.log('AdministrationXenController factory query');
+      console.log(data);
+    }, function(error) {
+      console.log('AdministrationXenController factory error');
+      console.log(error);
+    });
+  }
+  self.queryList();
+}
+
+dc2DashboardControllers.controller('AdministrationXenController', [
+  '$scope',
+  '$localStorage',
+  '$location',
+  'toaster',
+  'XenServerFactory',
+  AdministrationXenController
+]);
+
 function AdminUserController($scope, $localStorage, $location, $routeParams) {
   $scope.$storage = $localStorage;
   if (! $scope.$storage.authenticated) {
@@ -364,9 +472,9 @@ dc2DashboardControllers.controller('AdminUserController', ['$scope', '$localStor
 
 function DashBoardCtrl($scope, $location, $localStorage, AuthFactory) {
   $scope.$storage = $localStorage;
-  if (! $scope.$storage.authenticated) {
-    $location.path('/login');
-  }
+  // if (! $scope.$storage.authenticated) {
+  //   $location.path('/login');
+  // }
 }
 
 dc2DashboardControllers.controller('DashBoardCtrl', ['$scope', '$location', '$localStorage', 'AuthFactory', DashBoardCtrl]);
@@ -664,6 +772,56 @@ function DirectiveNavbar() {
 }
 
 dc2Directives.directive('navbar', [DirectiveNavbar])
+
+function sideBarController(SideBarMenus) {
+	var self = this;
+  this.sidebarmenus = SideBarMenus.menus;
+	this.checkGroup = function(user, groupname) {
+		if (groupname) {
+			if ('groups' in user) {
+				if (user.groups.indexOf(groupname) > -1) {
+					return true;
+				}
+			}
+		}
+	}
+  this.doDropDown = function(menu) {
+    if (! menu.is_down) {
+      menu.is_down = true;
+    } else {
+      menu.is_down = false;
+    }
+  }
+  this.isDown = function(menu) {
+    if (! 'is_down' in menu) {
+      menu.is_down = false;
+    }
+    return menu.is_down;
+  }
+  console.log(SideBarMenus.menus);
+	this.is_admin = this.checkGroup(this.user,'admin');
+	this.is_user = this.checkGroup(this.user,'user');
+}
+
+dc2Directives.controller('sideBarController', ['SideBarMenus', sideBarController]);
+
+function DirectiveSideBarNav() {
+	console.log('in SideBarNav Directive')
+	return {
+		templateUrl: 'partials/directives/sidebarnav.html',
+		restrict: 'E',
+		scope:  {
+			authenticated: "=",
+			user: "="
+		},
+		bindToController: true,
+		controller: 'sideBarController',
+		controllerAs: 'ctrlSideBar'
+	}
+}
+
+dc2Directives.directive('sidebar', [DirectiveSideBarNav]);
+
 function AuthCheckService(AuthFactory) {
   console.log('In AuthCheckService');
   return AuthFactory.get().$promise;

@@ -1,31 +1,34 @@
-<navbar authenticated="authenticated" user="user"></navbar>
-<div class="container">
-  <div class="row">
-    <div class="col-lg-4"></div>
-    <div class="col-lg-4">
-      <div class="panel panel-primary">
-        <div class="panel-heading">Login</div>
-        <div class="panel-body">
-          <form id="login-form">
-            <div class="form-group">
-              <label for="loginEmail">E-Mail</label>
-              <input type="text" id="loginEmail" class="form-control" autofocus name="loginEmail" ng-model="user.email" placeholder="Your Login E-Mail Address" />
-            </div>
-            <div class="form-group">
-              <label for="loginPassword">Password</label>
-              <input type="password" id="loginPassword" class="form-control" autofocus name="loginPassword" ng-model="user.password" placeholder="Your Login Password" />
-            </div>
-            <div class="form-group"> 
-              <select ng-model="user.auth_type">
-                <option value="local" selected>Local</option>
-              </select>
-            <div class="form-group">
-              <button class="btn btn-primary pull-right" ng-disabled="user.email == null || user.email == '' || user.password == null || user.password == ''" ng-click="doLogin(user)">Login</button>
-            </div>
-          </form>
+<navbar authenticated="$storage.authenticated" user="$storage.user"></navbar>
+<sidebar authenticated="$storage.authenticated" user="$storage.user"></sidebar>
+<div class="sidebar-content-wrapper">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-4"></div>
+      <div class="col-lg-4">
+        <div class="panel panel-primary">
+          <div class="panel-heading">Login</div>
+          <div class="panel-body">
+            <form id="login-form">
+              <div class="form-group">
+                <label for="loginEmail">E-Mail</label>
+                <input type="text" id="loginEmail" class="form-control" autofocus name="loginEmail" ng-model="user.email" placeholder="Your Login E-Mail Address" />
+              </div>
+              <div class="form-group">
+                <label for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" class="form-control" autofocus name="loginPassword" ng-model="user.password" placeholder="Your Login Password" />
+              </div>
+              <div class="form-group">
+                <select ng-model="user.auth_type">
+                  <option value="local" selected>Local</option>
+                </select>
+              <div class="form-group">
+                <button class="btn btn-primary pull-right" ng-disabled="user.email == null || user.email == '' || user.password == null || user.password == ''" ng-click="doLogin(user)">Login</button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
+      <div class="col-lg-4"></div>
     </div>
-    <div class="col-lg-4"></div>
   </div>
 </div>

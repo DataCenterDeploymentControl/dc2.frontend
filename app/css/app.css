@@ -1,6 +1,77 @@
-.nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
-body { padding-top: 70px; }
-
+.nav,
+.pagination,
+.carousel,
+.panel-title a {
+  cursor: pointer;
+}
+.sidebar {
+  left: 0;
+  top: 50px;
+  height: 100%;
+  margin-left: 0;
+  width: 250px;
+  z-index: 1000;
+  position: fixed;
+  border-right: 1px solid #000;
+  background-color: #3a3f44;
+}
+.sidebar .sidebar-nav {
+  position: absolute;
+  top: 0;
+  width: 250px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  margin-top: 2px;
+}
+.sidebar .sidebar-nav li {
+  text-indent: 5px;
+  line-height: 30px;
+  padding-left: 10px;
+  display: block;
+  color: #c8c8c8;
+}
+.sidebar .sidebar-nav li a {
+  display: block;
+  text-decoration: none;
+  color: #c8c8c8;
+}
+.sidebar .sidebar-nav li a:hover {
+  text-decoration: none;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.2);
+}
+.sidebar .sidebar-nav li a:active {
+  text-decoration: none;
+}
+.sidebar .sidebar-nav li a:focus {
+  text-decoration: none;
+}
+.sidebar .sidebar-nav li.sidebar-menu div.heading {
+  color: rgba(255, 255, 255, 0.8);
+  background-color: rgba(255, 255, 255, 0.1);
+  border-bottom-style: groove;
+}
+.sidebar .sidebar-nav li.sidebar-menu ul.sidebar-menu-content {
+  padding-left: 10px;
+}
+.sidebar-content-wrapper {
+  width: 100%;
+  position: absolute;
+  padding-left: 250px;
+  margin-right: 0px;
+}
 .pointer {
-	cursor: pointer;
+  cursor: pointer;
+}
+.hspacer {
+  height: 20px;
+}
+.noselect {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }

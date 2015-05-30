@@ -1,0 +1,10 @@
+<div class="sidebar">
+  <ul class="sidebar-nav">
+    <li ng-repeat="menu in ctrlSideBar.sidebarmenus" class="sidebar-menu" ng-if="ctrlSideBar.checkGroup(ctrlSideBar.user, menu.needs_group)">
+      <div ng-click="ctrlSideBar.doDropDown(menu)" class="heading pointer noselect"><i class="glyphicon" ng-class="{'glyphicon-chevron-down': ctrlSideBar.isDown(menu), 'glyphicon-chevron-right': !ctrlSideBar.sideisDown(menu)}"></i>&nbsp;&nbsp;{{menu.heading}}</div>
+      <ul ng-if="ctrlSideBar.isDown(menu)" class="sidebar-menu-content">
+        <li ng-repeat="menuitem in menu.items"><a href="#{{menuitem.link}}">{{menuitem.title}}</a></li>
+      </ul>
+    </li>
+  </ul>
+</div>
