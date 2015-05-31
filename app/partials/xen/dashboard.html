@@ -24,28 +24,24 @@
           </div>
           <div class="panel-body">
             <tabset>
-              <tab heading="Host Informations">
+              <tab heading="Cluster Informations">
                 <table class="table table-bordered table-condensed">
-                  <tbody>
+                  <thead>
                     <tr>
                       <th>Hostname</th>
-                      <td>{{CtrlXenDashboard.xenhost_selected.host[0].xen_hostname}}</td>
-                    </tr>
-                    <tr>
                       <th>No. of CPUs</th>
-                      <td>{{CtrlXenDashboard.xenhost_selected.host[0].xen_no_of_cpus}}</td>
-                    </tr>
-                    <tr>
                       <th>Memory Total (GiB)</th>
-                      <td>{{CtrlXenDashboard.xenhost_selected.host[0].xen_memory_total}}</td>
-                    </tr>
-                    <tr>
                       <th>Memory Used (GiB)</th>
-                      <td>{{CtrlXenDashboard.xenhost_selected.host[0].xen_memory_used}}</td>
-                    </tr>
-                    <tr>
                       <th>Memory Free (GiB)</th>
-                      <td>{{CtrlXenDashboard.xenhost_selected.host[0].xen_memory_free}}</td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr ng-repeat="xenhost_detail in CtrlXenDashboard.xenhost_selected.host">
+                      <td>{{xenhost_detail.xen_hostname}}</td>
+                      <td>{{xenhost_detail.xen_no_of_cpus}}</td>
+                      <td>{{xenhost_detail.xen_memory_total}}</td>
+                      <td>{{xenhost_detail.xen_memory_used}}</td>
+                      <td>{{xenhost_detail.xen_memory_free}}</td>
                     </tr>
                   </tbody>
                 </table>

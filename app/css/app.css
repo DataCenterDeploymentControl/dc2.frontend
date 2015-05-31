@@ -4,6 +4,9 @@
 .panel-title a {
   cursor: pointer;
 }
+body {
+  padding-top: 70px;
+}
 .sidebar {
   left: 0;
   top: 50px;
@@ -81,4 +84,7 @@
 #chartWrapper.panel-body #chartContainer {
   height: 100%;
   width: 100%;
+}
+#myChart.panel-body {
+  height: 500px;
 }

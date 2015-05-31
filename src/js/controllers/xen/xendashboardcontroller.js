@@ -52,6 +52,7 @@ function XenDashboardController($scope, $localStorage, toaster, XenFactory) {
       label: self.xenlist_data[xenhostname].host[0].xen_hostname
     });
     self.chart.render();
+
   }
   self.doList = function() {
     XenFactory.query({}, function(data) {

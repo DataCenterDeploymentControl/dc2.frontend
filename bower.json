@@ -16,6 +16,7 @@
     "angular-bootstrap": "*",
     "angularjs-toaster": "*",
     "ngstorage": "*",
-    "angular-encode-uri": "*"
+    "angular-encode-uri": "*",
+    "d3": "*"
   }
 }
