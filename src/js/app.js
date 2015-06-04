@@ -79,6 +79,14 @@ DC2Frontend.config(['$routeProvider',
           AuthCheckService: AuthCheckService
         }
       }).
+      when('/statusmgmt', {
+        templateUrl: 'partials/statusmgmt/index.html',
+        controller: 'StatusManagementController',
+        controllerAs: 'CtrlStatusMgmt',
+        resolve: {
+          AuthCheckService: AuthCheckService
+        }
+      }).
       otherwise({
         templateUrl: 'partials/main/index.html',
         controller: 'DashBoardCtrl',

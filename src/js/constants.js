@@ -22,12 +22,26 @@ DC2Frontend.constant('SideBarMenus', {
       ]
     },
     {
+      'heading': 'Status Management',
+      'needs_group': 'users',
+      'default': 0,
+      'items': [
+        {
+          'title': 'Dashboard',
+          'link': '/statusmgmt',
+          'is_default': true
+        }
+      ]
+    },
+    {
       'heading': 'IPAM',
       'needs_group': 'users',
+      'default': 0,
       'items': [
         {
           'title': 'IP Networks',
-          'link': '/ipam/ipnetworks'
+          'link': '/ipam/ipnetworks',
+          'is_default': true
         },
         {
           'title': 'Domains',
@@ -38,10 +52,12 @@ DC2Frontend.constant('SideBarMenus', {
     {
       'heading': 'Xen Infrastructure',
       'needs_group': 'users',
+      'default': 0,
       'items': [
         {
           'title': 'Xen Dashboard',
-          'link': '/xen/dashboard'
+          'link': '/xen/dashboard',
+          'is_default': true
         }
       ]
     }

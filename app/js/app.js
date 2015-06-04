@@ -79,6 +79,14 @@ DC2Frontend.config(['$routeProvider',
           AuthCheckService: AuthCheckService
         }
       }).
+      when('/statusmgmt', {
+        templateUrl: 'partials/statusmgmt/index.html',
+        controller: 'StatusManagementController',
+        controllerAs: 'CtrlStatusMgmt',
+        resolve: {
+          AuthCheckService: AuthCheckService
+        }
+      }).
       otherwise({
         templateUrl: 'partials/main/index.html',
         controller: 'DashBoardCtrl',
@@ -123,12 +131,26 @@ DC2Frontend.constant('SideBarMenus', {
       ]
     },
     {
+      'heading': 'Status Management',
+      'needs_group': 'users',
+      'default': 0,
+      'items': [
+        {
+          'title': 'Dashboard',
+          'link': '/statusmgmt',
+          'is_default': true
+        }
+      ]
+    },
+    {
       'heading': 'IPAM',
       'needs_group': 'users',
+      'default': 0,
       'items': [
         {
           'title': 'IP Networks',
-          'link': '/ipam/ipnetworks'
+          'link': '/ipam/ipnetworks',
+          'is_default': true
         },
         {
           'title': 'Domains',
@@ -139,10 +161,12 @@ DC2Frontend.constant('SideBarMenus', {
     {
       'heading': 'Xen Infrastructure',
       'needs_group': 'users',
+      'default': 0,
       'items': [
         {
           'title': 'Xen Dashboard',
-          'link': '/xen/dashboard'
+          'link': '/xen/dashboard',
+          'is_default': true
         }
       ]
     }
@@ -277,6 +301,17 @@ function HostEntryFactory($resource) {
 }
 
 dc2Factories.factory('HostEntryFactory', ["$resource", HostEntryFactory]);
+function StatusFactory($resource) {
+  return $resource("http://localhost:5000/api/statusmgmt/v1/states", {}, {
+    query: {
+      method:'GET',
+      isArray:true
+    },
+  });
+}
+
+dc2Factories.factory('StatusFactory', ['$resource', StatusFactory]);
+
 function GroupsFactory($resource) {
   return $resource("http://localhost:5000/api/admin/v1/groups",{}, {
     query: {
@@ -602,7 +637,7 @@ function DashBoardCtrl($scope, $location, $localStorage, AuthFactory) {
   $scope.foobar = {};
   $scope.foobar.myData = [
     {
-      series: 'Memory Free',
+      key: 'Memory Free',
       color: '#00FF00',
       values: [
         {
@@ -618,27 +653,44 @@ function DashBoardCtrl($scope, $location, $localStorage, AuthFactory) {
           value: 20
         }
       ]
+    },
+    {
+      key: 'Memory Used',
+      color: '#FF0000',
+      values: [
+        {
+          label: 'Virt1',
+          value: 30
+        },
+        {
+          label: 'Virt2',
+          value: 65
+        },
+        {
+          label: 'Virt3',
+          value: 18
+        }
+      ]
     }
-    // },
-    // {
-    //   series: 'Memory Used',
-    //   color: '#FF0000',
-    //   values: [
-    //     {
-    //       label: 'Virt1',
-    //       value: 30
-    //     },
-    //     {
-    //       label: 'Virt2',
-    //       value: 65
-    //     },
-    //     {
-    //       label: 'Virt3',
-    //       value: 18
-    //     }
-    //   ]
-    // }
   ]
+  $scope.foobar.options = {
+      "chart": {
+        "type": 'multiBarChart',
+        "height": 450,
+        "stacked": false,
+        "stackedOffset":0,
+        "x": function(d) { return d.label },
+        "y": function(d) { return d.value },
+        "showValues": true,
+        "showControls": true,
+        "margin": {
+          "top": 30,
+          "bottom":30,
+          "left":30,
+          "right":30
+        }
+      }
+  };
   $scope.$watch('$scope.foobar', function(newVar, oldVar){
     console.log('controller watch');
     console.log(newVar);
@@ -828,6 +880,29 @@ function LogoutCtrl($localStorage, $location) {
 
 dc2DashboardControllers.controller('LogoutCtrl', ['$localStorage', '$location', '$localStorage', LogoutCtrl]);
 
+function StatusManagementController($scope, $location, $localStorage, toaster, StatusFactory) {
+  var self = this;
+  $scope.$storage = $localStorage;
+  if (! $scope.$storage.authenticated) {
+    $location.path('/login');
+  }
+  self.statusList = null;
+
+  this.doList = function() {
+    StatusFactory.query(function(data) {
+      console.log(data);
+      self.statuslist = data;
+    }, function(error) {
+      console.log(error);
+      toaster.pop('error', error.status.message);
+    })
+  }
+
+  self.doList();
+}
+
+dc2DashboardControllers.controller('StatusManagementController', ['$scope', '$location', '$localStorage', 'toaster', 'StatusFactory', StatusManagementController]);
+
 function XenDashboardController($scope, $localStorage, toaster, XenFactory) {
   $scope.$storage = $localStorage;
 
@@ -874,14 +949,14 @@ function XenDashboardController($scope, $localStorage, toaster, XenFactory) {
   }
   self.updateChart = function(xenhostname) {
     self.chart_memory_used_dps.push({
-      y: parseInt(self.xenlist_data[xenhostname].host[0].xen_memory_used),
+      value: parseInt(self.xenlist_data[xenhostname].host[0].xen_memory_used),
       label: self.xenlist_data[xenhostname].host[0].xen_hostname
     });
     self.chart_memory_free_dps.push({
-      y: parseInt(self.xenlist_data[xenhostname].host[0].xen_memory_free),
+      value: parseInt(self.xenlist_data[xenhostname].host[0].xen_memory_free),
       label: self.xenlist_data[xenhostname].host[0].xen_hostname
     });
-    self.chart.render();
+    // self.chart.render();
 
   }
   self.doList = function() {
@@ -895,50 +970,19 @@ function XenDashboardController($scope, $localStorage, toaster, XenFactory) {
   }
   self.doCharting = function() {
     console.log('doCharting');
-    var dps = []
-
-    self.chart = new CanvasJS.Chart('chartContainer', {
-      theme: 'theme1',
-      title: {
-        text: 'XenServer Memory Chart'
+    self.chart = [
+      {
+        key: 'Memory Used',
+        color: '#FF0000',
+        values: self.chart_memory_used_dps
       },
-      axisY: {
-          title: 'Memory (GiB)',
-          labelFontSize: 16
-      },
-      axisX: {
-        labelFontSize: 12,
-      },
-      data: [
-        {
-          type: "stackedColumn",
-          legendText: 'Memeory Used (GiB)',
-          showInLegend: true,
-          dataPoints: self.chart_memory_used_dps,
-          color: 'red'
-        },
-        {
-          type: "stackedColumn",
-          legendText: "Memory Free (GiB)",
-          showInLegend: true,
-          dataPoints: self.chart_memory_free_dps,
-          color: 'green'
-        }
-      ],
-      legend: {
-        cursor: "pointer",
-        itemclick: function (e) {
-              if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
-                  e.dataSeries.visible = false;
-              } else {
-                  e.dataSeries.visible = true;
-              }
-              e.chart.render();
-          }
+      {
+        key: 'Memory Free',
+        color: '#00FF00',
+        values: self.chart_memory_free_dps
       }
-    });
-    self.chart.render();
 
+    ]
   }
   self.doList();
   self.doCharting();
@@ -1057,87 +1101,41 @@ function createD3Chart(scope, element, attrs) {
 	console.log(element.parent().height());
 	console.log(angular.element(scope.elementId))
 	console.log(element.parent());
+	var margin = {
+		left: 80,
+		right: 40,
+		top: 30,
+		bottom: 30
+	};
 	var svg_height = element.parent().height();
 	var svg_width = element.parent().width();
-	var chart_height = svg_height - 60; // margin top: 20 margin bottom: 20
-	var chart_width = svg_width - 60; // margin-left: 20 margin-right: 20
+	var chart_height = svg_height - margin.top - margin.bottom;
+	var chart_width = svg_width - margin.left; // margin-left: 20 margin-right: 20
 	var xPadding = 30;
 	var yPadding = 30;
-  var svg = d3.select(element[0])
-    .append("svg")
-    .attr('width', parseInt(svg_width))
-    .attr('height', parseInt(svg_height))
-		.style('background-color', '#ffffff')
-		.append('g').attr('transform', 'translate(30,30)');
-
-
 
   scope.$watch('data', function(newVal, oldVal) {
-		svg.selectAll('*').remove();
 		if (!newVal) {
 			console.log('here');
 			return;
 		}
-		var realData = newVal.map(function(d,i) {
-			console.log('mapping');
-			console.log(d);
-			var y0 = 0;
-			return d.values.map(function(d1, i1) {
-				return {
-					color: d.color,
-					label: d1.label,
-					value: d1.value,
-					y0: y0,
-					y1: y0+= +d1['value']
-				}
-			});
+		nv.addGraph(function() {
+			var chart = nv.models.multiBarHorizontalChart();
+			chart.stacked(true);
+			chart.showControls(false);
+			chart.x(function(d) { return d.label; });
+			chart.y(function(d) { return d.value; });
+			chart.tooltip.enabled(false);
+			chart.showValues(true);
+			chart.margin(margin);
+			d3.select(element[0]).select('svg').remove();
+			d3.select(element[0]).append('svg')
+				.attr('height', svg_height)
+				.attr('width', svg_width)
+				.style('background-color','#dddddd')
+				.datum(newVal).call(chart);
+			return chart;
 		});
-		console.log('realdata')
-		console.log(realData);
-		var x = d3.scale.ordinal()
-			.domain(realData.map(function(d,i) {
-				return d.forEach(function(d1,i1) {
-					console.log(d1.label);
-						return d1.label;
-				});
-			}))
-			.rangeRoundBands([0, chart_width], .1);
-		console.log('after x');
-		console.log(x.domain());
-		// var y = d3.scale.linear()
-		// 	.rangeRound([chart_height, 0]);
-		// var xAxis = d3.svg.axis().scale(x).orient('bottom');
-		// var yAxis = d3.svg.axis().scale(y).orient('left').tickFormat(d3.format(".0s"));
-		//
-		// y.domain([0, d3.max(realData, function (d) {
-		// 	console.log('in y.domain 1.max');
-		// 	console.log(d);
-		// 	return d3.max(d, function(d1) {
-		// 		console.log('in y.domain 2.max');
-		// 		console.log(d1)
-		// 		return parseInt(d1.y0);
-		// 	});
-		// })]);
-		// console.log(x('Virt1'));
-		// svg.append('g').attr('class','x-axis').attr('transform', 'translate(0, '+chart_height+')').call(xAxis);
-		// svg.append('g').attr('class','y-axis').call(yAxis);
-		// var series = svg.selectAll('.series')
-		// 	.data(realData)
-		// 	.enter()
-		// 	.append('g')
-		// 	.attr('class', 'series')
-		// 	.attr('transform', realData.map(function(d,i) {
-		// 		return d.map(function(d1) { return d1.label; })}));
-
-		// series.selectAll('rect')
-		// 	.data(function(d) { return d;})
-		// 	.enter()
-		// 	.append('rect')
-		// 	.style('fill', function(d) { console.log(d); return d.color;})
-		// 	.attr('width', x.rangeBand())
-		// 	.attr('y', function(d) { return y(d.y0);})
-		// 	.attr('height', function(d) { return y(d.y0)-y(d.y1);});
-
 	},true);
 }
 
@@ -1148,10 +1146,9 @@ function D3StackedBarChart() {
 		restrict: 'E',
 		terminal: true,
 		scope:  {
-      data: '=',
-			elementId: '@'
+      data: '='
 		},
-   link: createD3Chart
+		link: createD3Chart
 	}
 }
 
@@ -1196,7 +1193,7 @@ function DirectiveNavbar() {
 dc2Directives.directive('navbar', [DirectiveNavbar])
 
 
-function sideBarController(SideBarMenus) {
+function sideBarController(SideBarMenus, $location) {
 	var self = this;
   this.sidebarmenus = SideBarMenus.menus;
 	this.checkGroup = function(user, groupname) {
@@ -1210,7 +1207,13 @@ function sideBarController(SideBarMenus) {
 	}
   this.doDropDown = function(menu) {
     if (! menu.is_down) {
+			console.log(menu);
       menu.is_down = true;
+			if ('default' in menu) {
+				console.log(menu.default);
+				console.log(menu.items[menu.default].link);
+				$location.path(menu.items[menu.default].link)
+			}
     } else {
       menu.is_down = false;
     }
@@ -1226,7 +1229,7 @@ function sideBarController(SideBarMenus) {
 	this.is_user = this.checkGroup(this.user,'user');
 }
 
-dc2Directives.controller('sideBarController', ['SideBarMenus', sideBarController]);
+dc2Directives.controller('sideBarController', ['SideBarMenus', '$location', sideBarController]);
 
 function DirectiveSideBarNav() {
 	console.log('in SideBarNav Directive')

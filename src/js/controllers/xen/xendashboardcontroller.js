@@ -44,14 +44,14 @@ function XenDashboardController($scope, $localStorage, toaster, XenFactory) {
   }
   self.updateChart = function(xenhostname) {
     self.chart_memory_used_dps.push({
-      y: parseInt(self.xenlist_data[xenhostname].host[0].xen_memory_used),
+      value: parseInt(self.xenlist_data[xenhostname].host[0].xen_memory_used),
       label: self.xenlist_data[xenhostname].host[0].xen_hostname
     });
     self.chart_memory_free_dps.push({
-      y: parseInt(self.xenlist_data[xenhostname].host[0].xen_memory_free),
+      value: parseInt(self.xenlist_data[xenhostname].host[0].xen_memory_free),
       label: self.xenlist_data[xenhostname].host[0].xen_hostname
     });
-    self.chart.render();
+    // self.chart.render();
 
   }
   self.doList = function() {
@@ -65,50 +65,19 @@ function XenDashboardController($scope, $localStorage, toaster, XenFactory) {
   }
   self.doCharting = function() {
     console.log('doCharting');
-    var dps = []
-
-    self.chart = new CanvasJS.Chart('chartContainer', {
-      theme: 'theme1',
-      title: {
-        text: 'XenServer Memory Chart'
+    self.chart = [
+      {
+        key: 'Memory Used',
+        color: '#FF0000',
+        values: self.chart_memory_used_dps
       },
-      axisY: {
-          title: 'Memory (GiB)',
-          labelFontSize: 16
-      },
-      axisX: {
-        labelFontSize: 12,
-      },
-      data: [
-        {
-          type: "stackedColumn",
-          legendText: 'Memeory Used (GiB)',
-          showInLegend: true,
-          dataPoints: self.chart_memory_used_dps,
-          color: 'red'
-        },
-        {
-          type: "stackedColumn",
-          legendText: "Memory Free (GiB)",
-          showInLegend: true,
-          dataPoints: self.chart_memory_free_dps,
-          color: 'green'
-        }
-      ],
-      legend: {
-        cursor: "pointer",
-        itemclick: function (e) {
-              if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
-                  e.dataSeries.visible = false;
-              } else {
-                  e.dataSeries.visible = true;
-              }
-              e.chart.render();
-          }
+      {
+        key: 'Memory Free',
+        color: '#00FF00',
+        values: self.chart_memory_free_dps
       }
-    });
-    self.chart.render();
 
+    ]
   }
   self.doList();
   self.doCharting();

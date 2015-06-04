@@ -1,5 +1,5 @@
 
-function sideBarController(SideBarMenus) {
+function sideBarController(SideBarMenus, $location) {
 	var self = this;
   this.sidebarmenus = SideBarMenus.menus;
 	this.checkGroup = function(user, groupname) {
@@ -13,7 +13,13 @@ function sideBarController(SideBarMenus) {
 	}
   this.doDropDown = function(menu) {
     if (! menu.is_down) {
+			console.log(menu);
       menu.is_down = true;
+			if ('default' in menu) {
+				console.log(menu.default);
+				console.log(menu.items[menu.default].link);
+				$location.path(menu.items[menu.default].link)
+			}
     } else {
       menu.is_down = false;
     }
@@ -29,7 +35,7 @@ function sideBarController(SideBarMenus) {
 	this.is_user = this.checkGroup(this.user,'user');
 }
 
-dc2Directives.controller('sideBarController', ['SideBarMenus', sideBarController]);
+dc2Directives.controller('sideBarController', ['SideBarMenus', '$location', sideBarController]);
 
 function DirectiveSideBarNav() {
 	console.log('in SideBarNav Directive')

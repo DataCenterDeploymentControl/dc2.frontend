@@ -3,7 +3,7 @@ function DashBoardCtrl($scope, $location, $localStorage, AuthFactory) {
   $scope.foobar = {};
   $scope.foobar.myData = [
     {
-      series: 'Memory Free',
+      key: 'Memory Free',
       color: '#00FF00',
       values: [
         {
@@ -19,27 +19,44 @@ function DashBoardCtrl($scope, $location, $localStorage, AuthFactory) {
           value: 20
         }
       ]
+    },
+    {
+      key: 'Memory Used',
+      color: '#FF0000',
+      values: [
+        {
+          label: 'Virt1',
+          value: 30
+        },
+        {
+          label: 'Virt2',
+          value: 65
+        },
+        {
+          label: 'Virt3',
+          value: 18
+        }
+      ]
     }
-    // },
-    // {
-    //   series: 'Memory Used',
-    //   color: '#FF0000',
-    //   values: [
-    //     {
-    //       label: 'Virt1',
-    //       value: 30
-    //     },
-    //     {
-    //       label: 'Virt2',
-    //       value: 65
-    //     },
-    //     {
-    //       label: 'Virt3',
-    //       value: 18
-    //     }
-    //   ]
-    // }
   ]
+  $scope.foobar.options = {
+      "chart": {
+        "type": 'multiBarChart',
+        "height": 450,
+        "stacked": false,
+        "stackedOffset":0,
+        "x": function(d) { return d.label },
+        "y": function(d) { return d.value },
+        "showValues": true,
+        "showControls": true,
+        "margin": {
+          "top": 30,
+          "bottom":30,
+          "left":30,
+          "right":30
+        }
+      }
+  };
   $scope.$watch('$scope.foobar', function(newVar, oldVar){
     console.log('controller watch');
     console.log(newVar);
