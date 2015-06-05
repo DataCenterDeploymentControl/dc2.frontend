@@ -33,7 +33,17 @@
                   <td>{{status.created_at}}</td>
                   <td>{{status.updated_at}}</td>
                   <td>{{status.created_by}}</td>
-                  <td>Action</td>
+                  <td>
+                    <div class="btn-group" dropdown>
+                      <button type="button" class="btn btn-danger btn-sm dropdown-toggle" dropdown-toggle>
+                        Action <span class="caret"></span>
+                      </button>
+                      <ul class="dropdown-menu" role="menu">
+                        <li><a href ng-click="CtrlStatusMgmt.doEditEntry(status)">Edit</a></li>
+                        <li><a href>Remove</a></li>
+                      </ul>
+                    </div>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -41,28 +51,31 @@
         </div>
       </div>
     </div>
-    <div class="row" ng-if="CtrlStatusMgmt.view_state.add">
+    <div class="row" ng-if="CtrlStatusMgmt.view_state.add || CtrlStatusMgmt.view_state.edit">
       <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
         <div class="panel panel-primary">
             <div class="panel-heading">
-              <h3 class="panel-title">New Incident <span ng-click="CtrlStatusMgmt.doCancelEdit()" class="pull-right glyphicon glyphicon-remove pointer"></span></h3>
+              <h3 class="panel-title" ng-if="CtrlStatusMgmt.view_state.add">New Incident <span ng-click="CtrlStatusMgmt.doCancelEdit()" class="pull-right glyphicon glyphicon-remove pointer"></span></h3>
+              <h3 class="panel-title" ng-if="CtrlStatusMgmt.view_state.edit">Edit Incident <span ng-click="CtrlStatusMgmt.doCancelEdit()" class="pull-right glyphicon glyphicon-remove pointer"></span></h3>
+
             </div>
             <div class="panel-body">
               <form class="form">
                 <div class="row">
-                  <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">              
+                  <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
                     <div class="form-group">
                       <label for="title" class="form-label">Title</label>
                       <input type="text" name="title" id="inputTitle" class="form-control input-sm" ng-model="CtrlStatusMgmt.entry.title" required="required" />
                     </div>
                     <div class="form-group">
                       <label for="status" class="form-label">Status</label>
-                      <select class="form-control input-sm" ng-model="CtrlStatusMgmt.entry.status" ng-options="item.type as item.value for item in CtrlStatusMgmt.select_values.states">
+                      <select class="form-control input-sm" ng-model="CtrlStatusMgmt.entry.status">
+                        <options ng-repeat="status in CtrlStatusMgmt.select_values.states" value="{{status}}">{{status|capitalize}}</options>
                       </select>
                     </div>
                     <div class="form-group">
                       <label for="impact" class="form-label">Impact</label>                    
-                      <select class="form-control input-sm" ng-model="CtrlStatusMgmt.entry.impact" ng-options="item.type as item.value for item in CtrlStatusMgmt.select_values.impact"></select>
+                      <select class="form-control input-sm" ng-model="CtrlStatusMgmt.entry.impact" ng-options="item|capitalize for item in CtrlStatusMgmt.select_values.impact track by item" ></select>
                     </div>
                   </div>
                   <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">

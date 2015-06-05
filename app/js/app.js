@@ -899,14 +899,14 @@ function StatusManagementController($scope, $location, $localStorage, toaster, S
   self.statusList = null;
   self.select_values = {
     states: [
-      {type: 'new', value: 'New'},
-      {type: 'update', value: 'Update'},
-      {type: 'resolved', value: 'Resolved'},
-      {type: 'done', value: 'Done'}
+      'new',
+      'update',
+      'resolved',
+      'done'
     ],
     impact: [
-      {type: 'internal', value: 'BrandMaker Internal Customers'},
-      {type: 'external', value: 'BrandMaker External Customers'}
+      'internal',
+      'external'
     ]
   };
 
@@ -915,7 +915,8 @@ function StatusManagementController($scope, $location, $localStorage, toaster, S
       title: null,
       status: 'new',
       description: null,
-      impact: 'internal'
+      impact: 'internal',
+
     };
   }
   self.doList = function() {
@@ -930,6 +931,7 @@ function StatusManagementController($scope, $location, $localStorage, toaster, S
 
   self.doAdd = function() {
     self.emptyEntry();
+    console.log(self.entry);
     self.view_state.add = true;
     self.view_state.edit = false;
     self.view_state.list = false;
@@ -954,6 +956,13 @@ function StatusManagementController($scope, $location, $localStorage, toaster, S
       toaster.pop('error', error.status.message);
       self.doCancelEdit();      
     });
+  }
+  self.doEditEntry = function(entry) {
+    self.entry = entry;
+    console.log(self.entry);
+    self.view_state.add = false;
+    self.view_state.list = false;
+    self.view_state.edit = true;
   }
   self.doList();
 }
