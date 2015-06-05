@@ -4,6 +4,11 @@ function StatusFactory($resource) {
       method:'GET',
       isArray:true
     },
+    new: {
+      method: 'POST',
+      isArray: false,
+      data:'@entry'
+    }
   });
 }
 

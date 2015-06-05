@@ -2,13 +2,13 @@
 <sidebar authenticated="$storage.authenticated" user="$storage.user"></sidebar>
 <div class="sidebar-content-wrapper">
   <div class="container-fluid">
-    <div class="row">
+    <div class="row" ng-if="CtrlStatusMgmt.view_state.list">
       <div class="col-lg-12">
       <div class="panel panel-primary">
           <div class="panel-heading">
             <h3 class="panel-title">
             <div class="btn-group btn-group-sm">
-              <button class="btn btn-sm btn-primary"><i class="glyphicon glyphicon-plus"></i></button>
+              <button class="btn btn-sm btn-primary" ng-click="CtrlStatusMgmt.doAdd()"><i class="glyphicon glyphicon-plus"></i></button>
             </div>
             &nbsp;&nbsp;Status Upates</h3>
           </div>
@@ -41,26 +41,44 @@
         </div>
       </div>
     </div>
-    <div class="row">
+    <div class="row" ng-if="CtrlStatusMgmt.view_state.add">
       <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
         <div class="panel panel-primary">
             <div class="panel-heading">
-              <h3 class="panel-title">New Incident</h3>
+              <h3 class="panel-title">New Incident <span ng-click="CtrlStatusMgmt.doCancelEdit()" class="pull-right glyphicon glyphicon-remove pointer"></span></h3>
             </div>
             <div class="panel-body">
-              <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
-                <form class="form">
-                  <div class="form-group">
-                    <label for="title" class="form-label">Title</label>
-                    <input type="text" name="title" id="inputTitle" class="form-control input-sm" ng-model="CtrlStatusMgmt.entry.title" required="required" />
+              <form class="form">
+                <div class="row">
+                  <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">              
+                    <div class="form-group">
+                      <label for="title" class="form-label">Title</label>
+                      <input type="text" name="title" id="inputTitle" class="form-control input-sm" ng-model="CtrlStatusMgmt.entry.title" required="required" />
+                    </div>
+                    <div class="form-group">
+                      <label for="status" class="form-label">Status</label>
+                      <select class="form-control input-sm" ng-model="CtrlStatusMgmt.entry.status" ng-options="item.type as item.value for item in CtrlStatusMgmt.select_values.states">
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="impact" class="form-label">Impact</label>                    
+                      <select class="form-control input-sm" ng-model="CtrlStatusMgmt.entry.impact" ng-options="item.type as item.value for item in CtrlStatusMgmt.select_values.impact"></select>
+                    </div>
                   </div>
-                  <div class="form-group">
-                    <label for="status" class="form-label">Status</label>
-                    <select class="form-control" ng-model="CtrlStatusMgmt.entry.status">
-                    </select>
+                  <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                    <div class="form-group">
+                      <label for="description" class="form-label">Description</label>
+                      <textarea ng-model="CtrlStatusMgmt.entry.description" class="form-control input-sm" rows="20"></textarea>
+                    </div>                  
                   </div>
-                </form>                
-              </div>
+                </div>
+                <div class="row">
+                  <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <hr/>
+                    <button class="pull-right btn btn-primary btn-sm" ng-click="CtrlStatusMgmt.doSaveEntry()">Create</button>
+                  </div>
+                </div>
+              </form>
             </div>
           </div>
         </div>
