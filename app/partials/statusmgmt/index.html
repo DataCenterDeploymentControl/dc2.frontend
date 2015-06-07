@@ -19,6 +19,7 @@
                   <th>ID</th>
                   <TH>Titiel</TH>
                   <th>Status</th>
+                  <th>Impact</th>
                   <th>Created</th>
                   <th>Updated</th>
                   <th>Created By</th>
@@ -29,7 +30,8 @@
                 <tr ng-repeat="status in CtrlStatusMgmt.statuslist">
                   <td>{{status.id}}</td>
                   <td>{{status.title}}</td>
-                  <td>{{status.status}}</td>
+                  <td>{{status.status|capitalize}}</td>
+                  <td>{{status.impact|capitalize}}</td>
                   <td>{{status.created_at}}</td>
                   <td>{{status.updated_at}}</td>
                   <td>{{status.created_by}}</td>
@@ -40,7 +42,7 @@
                       </button>
                       <ul class="dropdown-menu" role="menu">
                         <li><a href ng-click="CtrlStatusMgmt.doEditEntry(status)">Edit</a></li>
-                        <li><a href>Remove</a></li>
+                        <li><a href ng-click="CtrlStatusMgmt.doRemoveEntry(status)">Remove</a></li>
                       </ul>
                     </div>
                   </td>
@@ -69,8 +71,8 @@
                     </div>
                     <div class="form-group">
                       <label for="status" class="form-label">Status</label>
-                      <select class="form-control input-sm" ng-model="CtrlStatusMgmt.entry.status">
-                        <options ng-repeat="status in CtrlStatusMgmt.select_values.states" value="{{status}}">{{status|capitalize}}</options>
+                      <select class="form-control input-sm" ng-model="CtrlStatusMgmt.entry.status" ng-options="status as status|capitalize for status in CtrlStatusMgmt.select_values.states track by status"></select>
+                        
                       </select>
                     </div>
                     <div class="form-group">
@@ -87,8 +89,50 @@
                 </div>
                 <div class="row">
                   <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                          <h3 class="panel-title">
+                          <div class="btn-group btn-group-sm">
+                            <button class="btn btn-sm btn-primary" ng-click="CtrlStatusMgmt.doUpdateAdd()"><i class="glyphicon glyphicon-plus"></i></button>
+                          </div>
+                          Updates</h3>
+                        </div>
+                        <div class="panel-body">
+                          <table class="table table-hover table-condensed table-border">
+                            <thead>
+                              <tr>
+                                <th>ID</th>
+                                <th>Update</th>
+                                <th>Created</th>
+                                <th>Updated</th>
+                                <th>Action</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr ng-repeat="update in CtrlStatusMgmt.entry.updates">
+                                <td>{{update.id}}</td>
+                                <td>{{update.update}}</td>
+                                <td>{{update.created_at}}</td>
+                                <td>{{update.updated_at}}</td>
+                                <td>Action</td>
+                              </tr>
+                              <tr ng-if="CtrlStatusMgmt.view_state.update.add">
+                                <td></td>
+                                <td colspan="3">
+                                  <textarea ng-model="CtrlStatusMgmt.update_entry" class="form-control input-sm" rows="5"></textarea>
+                                </td>
+                                <td><button class="btn btn-primary btn-sm" ng-click="CtrlStatusMgmt.doUpdateAddEntry()">Add</button></td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                     <hr/>
-                    <button class="pull-right btn btn-primary btn-sm" ng-click="CtrlStatusMgmt.doSaveEntry()">Create</button>
+                    <button class="pull-right btn btn-primary btn-sm" ng-click="CtrlStatusMgmt.doSaveEntry()">Save</button>
                   </div>
                 </div>
               </form>
